@@ -1,0 +1,7 @@
+paddlepaddle==2.6.2
+paddleocr==2.9.1
+opencv-python-headless
+Pillow
+numpy
+torch
+ultralytics
