@@ -1,0 +1,258 @@
+/* ═══════════════════════════════════════════
+   ParkIT – ParkingSpots.css  |  Admin Parking Spots Page
+   ═══════════════════════════════════════════ */
+
+/* ── Page wrapper ── */
+.parking-spots-page {
+  width: 100%;
+  animation: overview-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ══════════════════════════════
+   Filter Card
+══════════════════════════════ */
+.ps-filter-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 18px 24px;
+  background: rgba(10, 26, 66, 0.55);
+  border: 1px solid rgba(59, 125, 232, 0.15);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ── Search input ── */
+.ps-search {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 14px;
+  background: rgba(5, 14, 40, 0.6);
+  border: 1px solid rgba(59, 125, 232, 0.2);
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.ps-search::placeholder {
+  color: var(--text-secondary);
+}
+
+.ps-search:focus {
+  border-color: rgba(59, 125, 232, 0.5);
+  box-shadow: 0 0 0 3px rgba(59, 125, 232, 0.1);
+}
+
+/* ── Dropdown selects ── */
+.ps-select {
+  height: 40px;
+  padding: 0 32px 0 14px;
+  background: rgba(5, 14, 40, 0.6);
+  border: 1px solid rgba(59, 125, 232, 0.2);
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238899bb' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  white-space: nowrap;
+}
+
+.ps-select:focus {
+  border-color: rgba(59, 125, 232, 0.5);
+  box-shadow: 0 0 0 3px rgba(59, 125, 232, 0.1);
+}
+
+.ps-select option {
+  background: #0d1f4a;
+  color: var(--text-primary);
+}
+
+/* ══════════════════════════════
+   Table Card
+══════════════════════════════ */
+.ps-table-card {
+  margin-top: 24px;
+  padding: 0;
+  background: rgba(10, 26, 66, 0.55);
+  border: 1px solid rgba(59, 125, 232, 0.15);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+/* ── Table ── */
+.ps-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.ps-table thead tr {
+  border-bottom: 1px solid rgba(59, 125, 232, 0.15);
+}
+
+.ps-table th {
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.ps-table td {
+  padding: 13px 20px;
+  color: var(--text-primary);
+  font-weight: 500;
+  border-bottom: 1px solid rgba(59, 125, 232, 0.06);
+}
+
+.ps-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ps-table tbody tr {
+  transition: background 0.15s;
+}
+
+.ps-table tbody tr:hover {
+  background: rgba(59, 125, 232, 0.05);
+}
+
+/* ── Status badge ── */
+.ps-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.ps-badge--available {
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.ps-badge--occupied {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.ps-badge--reserved {
+  background: rgba(34, 211, 238, 0.12);
+  color: #22d3ee;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+}
+
+.ps-badge--maintenance {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* ── Table footer ── */
+.ps-table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(59, 125, 232, 0.12);
+}
+
+.ps-table-info {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ── Pagination buttons ── */
+.ps-pagination {
+  display: flex;
+  gap: 8px;
+}
+
+.ps-page-btn {
+  height: 34px;
+  padding: 0 16px;
+  background: transparent;
+  border: 1px solid rgba(59, 125, 232, 0.25);
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.ps-page-btn:hover {
+  border-color: rgba(59, 125, 232, 0.55);
+  color: var(--text-primary);
+  background: rgba(59, 125, 232, 0.08);
+}
+
+/* ══════════════════════════════
+   Responsive
+══════════════════════════════ */
+@media (max-width: 768px) {
+  .ps-filter-card {
+    flex-wrap: wrap;
+    padding: 16px 18px;
+    gap: 10px;
+  }
+
+  .ps-search {
+    flex: 1 1 100%;
+  }
+
+  .ps-select {
+    flex: 1 1 calc(50% - 5px);
+  }
+}
+
+@media (max-width: 480px) {
+  .ps-select {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .ps-table-card {
+    overflow-x: auto;
+  }
+
+  .ps-table th,
+  .ps-table td {
+    padding: 11px 14px;
+  }
+
+  .ps-table-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .ps-pagination {
+    align-self: flex-end;
+  }
+}

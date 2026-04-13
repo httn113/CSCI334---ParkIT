@@ -1,0 +1,503 @@
+/* ═══════════════════════════════════════════
+   ParkIT – MyBookings.css  |  My Bookings Page
+   ═══════════════════════════════════════════ */
+
+   .bookings-page {
+    padding: 36px 40px;
+    width: 100%;
+    max-width: 760px;
+    animation: bookings-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  
+  @keyframes bookings-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* ── Welcome heading ── */
+  .bookings-welcome {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 28px 0;
+    letter-spacing: -0.01em;
+  }
+  
+  .bookings-username {
+    color: var(--accent-lt, #7baaf7);
+  }
+  
+  .bookings-datetime {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-muted, #7a8aaa);
+    margin: -18px 0 28px 0;
+    letter-spacing: 0.02em;
+  }
+  
+  /* ── Section label ── */
+  .bookings-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted, #7a8aaa);
+    margin-bottom: 14px;
+    margin-top: 0;
+  }
+  
+  /* ── Booking card ── */
+  .booking-card {
+    background: rgba(10, 26, 66, 0.55);
+    border: 1px solid rgba(59, 125, 232, 0.2);
+    border-radius: 16px;
+    padding: 26px 28px;
+    backdrop-filter: blur(12px);
+  }
+  
+  /* ── Header row (badge + meta + status) ── */
+  .booking-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  
+  .booking-spot-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, rgba(59, 125, 232, 0.25), rgba(37, 99, 235, 0.15));
+    border: 2px solid rgba(59, 125, 232, 0.5);
+    border-radius: 14px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent-lt, #7baaf7);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  
+  .booking-spot-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .booking-spot-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted, #7a8aaa);
+  }
+  
+  .booking-zone {
+    font-size: 0.95rem;
+    color: var(--text-primary, #e2e8f0);
+    font-weight: 500;
+  }
+  
+  .booking-zone strong {
+    color: #ffffff;
+    font-weight: 700;
+  }
+  
+  /* ── Status pill ── */
+  .booking-status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    background: rgba(100, 100, 120, 0.2);
+    border: 1px solid rgba(100, 100, 120, 0.3);
+    color: var(--text-muted, #7a8aaa);
+  }
+  
+  .booking-status-pill.status-ready {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.35);
+    color: #4ade80;
+  }
+  
+  /* ── Divider ── */
+  .booking-divider {
+    height: 1px;
+    background: rgba(59, 125, 232, 0.12);
+    margin: 22px 0;
+  }
+  
+  /* ── Details grid ── */
+  .booking-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  
+  .booking-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  
+  .booking-detail-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted, #7a8aaa);
+  }
+  
+  .booking-detail-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+  }
+  
+  .booking-detail-value.timer {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--accent-lt, #7baaf7);
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .booking-detail-value.plate {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.1em;
+    font-size: 0.95rem;
+    color: var(--accent-lt, #7baaf7);
+    overflow-wrap: break-word;
+    word-break: break-all;
+  }
+  
+  /* ── Spot info cards ── */
+  .spot-cards-row {
+    display: flex;
+    gap: 16px;
+  }
+  
+  .spot-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(10, 26, 66, 0.55);
+    border: 1px solid rgba(59, 125, 232, 0.2);
+    border-radius: 16px;
+    padding: 22px 24px;
+    backdrop-filter: blur(12px);
+    min-width: 0;
+  }
+  
+  .spot-card-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ffffff;
+  }
+  
+  .spot-card-number {
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .spot-card-number.available {
+    color: #4ade80;
+  }
+  
+  .spot-card-number.visitor {
+    color: #ffffff;
+  }
+  
+  /* ── Quick Actions ── */
+  .quick-actions-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .quick-action-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(10, 26, 66, 0.55);
+    border: 1px solid rgba(59, 125, 232, 0.2);
+    border-radius: 16px;
+    padding: 18px 22px;
+    backdrop-filter: blur(12px);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    width: 100%;
+  }
+  
+  .quick-action-card:hover {
+    background: rgba(59, 125, 232, 0.12);
+    border-color: rgba(59, 125, 232, 0.45);
+    transform: translateY(-2px);
+  }
+  
+  .quick-action-card.accent {
+    background: linear-gradient(135deg, rgba(59, 125, 232, 0.18), rgba(37, 99, 235, 0.10));
+    border-color: rgba(59, 125, 232, 0.4);
+  }
+  
+  .quick-action-card.accent:hover {
+    background: linear-gradient(135deg, rgba(59, 125, 232, 0.28), rgba(37, 99, 235, 0.18));
+    border-color: rgba(59, 125, 232, 0.65);
+  }
+  
+  .quick-action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+  
+  .quick-action-icon.map-icon {
+    background: rgba(123, 170, 247, 0.12);
+    color: var(--accent-lt, #7baaf7);
+    border: 1px solid rgba(123, 170, 247, 0.25);
+  }
+  
+  .quick-action-icon.book-icon {
+    background: rgba(74, 222, 128, 0.12);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.25);
+  }
+  
+  .quick-action-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .quick-action-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  
+  .quick-action-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted, #7a8aaa);
+    font-weight: 400;
+  }
+  
+  .quick-action-arrow {
+    color: var(--text-muted, #7a8aaa);
+    flex-shrink: 0;
+    transition: transform 0.2s, color 0.2s;
+  }
+  
+  .quick-action-card:hover .quick-action-arrow {
+    transform: translateX(3px);
+    color: var(--accent-lt, #7baaf7);
+  }
+  
+  /* ── Notification cards ── */
+  .notification-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    border-radius: 16px;
+    padding: 20px 22px;
+    backdrop-filter: blur(12px);
+  }
+  
+  .notification-card.peak-alert {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(109, 40, 217, 0.10));
+    border: 1px solid rgba(139, 92, 246, 0.35);
+  }
+  
+  .notif-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    background: rgba(139, 92, 246, 0.18);
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    color: #a78bfa;
+  }
+  
+  .notif-text {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .notif-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #a78bfa;
+  }
+  
+  .notif-body {
+    font-size: 0.8rem;
+    color: var(--text-muted, #7a8aaa);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+  
+  /* ══════════════════════════════════
+     TABLET  (≤ 1024px)
+     ══════════════════════════════════ */
+  @media (max-width: 1024px) {
+    .bookings-page {
+      padding: 28px 32px;
+    }
+  }
+  
+  /* ══════════════════════════════════
+     MOBILE  (≤ 768px)
+     ══════════════════════════════════ */
+  @media (max-width: 768px) {
+    .bookings-page {
+      padding: 24px 20px;
+    }
+  
+    .booking-card {
+      padding: 20px 18px;
+    }
+  
+    .booking-details {
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+  
+    .spot-cards-row {
+      gap: 12px;
+    }
+  
+    .spot-card {
+      padding: 18px 20px;
+    }
+  
+    .quick-action-card {
+      padding: 16px 18px;
+    }
+  }
+  
+  /* ══════════════════════════════════
+     SMALL MOBILE  (≤ 480px)
+     ══════════════════════════════════ */
+  @media (max-width: 480px) {
+    .bookings-page {
+      padding: 20px 16px;
+    }
+  
+    .bookings-welcome {
+      font-size: 1.25rem;
+      margin-bottom: 20px;
+    }
+  
+    .bookings-datetime {
+      font-size: 0.78rem;
+      margin: -14px 0 20px 0;
+    }
+  
+    .booking-card {
+      padding: 16px 14px;
+    }
+  
+    .booking-header {
+      gap: 12px;
+    }
+  
+    .booking-spot-badge {
+      width: 54px;
+      height: 54px;
+      font-size: 1.25rem;
+    }
+  
+    .booking-details {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+  
+    .booking-status-pill {
+      width: 100%;
+      justify-content: center;
+    }
+  
+    .spot-cards-row {
+      flex-direction: column;
+    }
+  
+    .spot-card {
+      padding: 16px 18px;
+    }
+  
+    .spot-card-number {
+      font-size: 2rem;
+    }
+  
+    .quick-action-card {
+      padding: 14px 16px;
+      gap: 12px;
+    }
+  
+    .quick-action-icon {
+      width: 40px;
+      height: 40px;
+    }
+  
+    .notification-card {
+      padding: 16px 14px;
+      gap: 12px;
+    }
+  
+    .notif-icon-wrap {
+      width: 40px;
+      height: 40px;
+    }
+  }
+  
+  /* ══════════════════════════════════
+     EXTRA SMALL  (≤ 360px)
+     ══════════════════════════════════ */
+  @media (max-width: 360px) {
+    .bookings-page {
+      padding: 16px 12px;
+    }
+  
+    .bookings-welcome {
+      font-size: 1.1rem;
+    }
+  
+    .booking-spot-badge {
+      width: 48px;
+      height: 48px;
+      font-size: 1.1rem;
+      border-radius: 12px;
+    }
+  
+    .quick-action-title {
+      font-size: 0.88rem;
+    }
+  
+    .quick-action-sub {
+      font-size: 0.7rem;
+    }
+  }

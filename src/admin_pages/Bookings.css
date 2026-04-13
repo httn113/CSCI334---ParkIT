@@ -1,0 +1,97 @@
+/* ═══════════════════════════════════════════
+   ParkIT – Bookings.css  |  Admin Bookings Page
+   ═══════════════════════════════════════════ */
+
+/* ── Page wrapper ── */
+.bookings-page {
+  width: 100%;
+  animation: overview-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ══════════════════════════════
+   Booking Stat Card Variants
+   (extend base .stat-card from overview.css)
+══════════════════════════════ */
+
+/* Total Booking — white value */
+.stat-card--bk-total {
+  border-top-color: rgba(255, 255, 255, 0.5);
+}
+.stat-card--bk-total .stat-label {
+  color: #ffffff;
+}
+.stat-card--bk-total .stat-value {
+  color: #ffffff;
+}
+.stat-card--bk-total:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 28px rgba(255, 255, 255, 0.08);
+}
+
+/* Active — green value */
+.stat-card--bk-active {
+  border-top-color: #4ade80;
+}
+.stat-card--bk-active .stat-label {
+  color: #ffffff;
+}
+.stat-card--bk-active .stat-value {
+  color: #4ade80;
+}
+.stat-card--bk-active:hover {
+  border-color: rgba(74, 222, 128, 0.4);
+  box-shadow: 0 8px 28px rgba(74, 222, 128, 0.12);
+}
+
+/* Completed — blue value */
+.stat-card--bk-completed {
+  border-top-color: #3b7de8;
+}
+.stat-card--bk-completed .stat-label {
+  color: #ffffff;
+}
+.stat-card--bk-completed .stat-value {
+  color: #3b7de8;
+}
+.stat-card--bk-completed:hover {
+  border-color: rgba(59, 125, 232, 0.45);
+  box-shadow: 0 8px 28px rgba(59, 125, 232, 0.15);
+}
+
+/* Expired — red value */
+.stat-card--bk-expired {
+  border-top-color: #ef4444;
+}
+.stat-card--bk-expired .stat-label {
+  color: #ffffff;
+}
+.stat-card--bk-expired .stat-value {
+  color: #ef4444;
+}
+.stat-card--bk-expired:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 8px 28px rgba(239, 68, 68, 0.12);
+}
+
+/* ══════════════════════════════
+   Booking Status Badges
+   (extend base .ps-badge from ParkingSpots.css)
+══════════════════════════════ */
+
+.ps-badge--active {
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.ps-badge--completed {
+  background: rgba(59, 125, 232, 0.12);
+  color: #3b7de8;
+  border: 1px solid rgba(59, 125, 232, 0.25);
+}
+
+.ps-badge--expired {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}

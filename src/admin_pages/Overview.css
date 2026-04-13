@@ -1,0 +1,283 @@
+/* ═══════════════════════════════════════════
+   ParkIT – overview.css  |  Admin Overview Page
+   ═══════════════════════════════════════════ */
+
+/* ── Page wrapper ── */
+.overview-page {
+  width: 100%;
+  animation: overview-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes overview-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════
+   Stat Cards Grid
+══════════════════════════════ */
+.stat-cards {
+  display: grid;
+  /* 4 equal columns when viewport allows; auto-wraps below ~900 px */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+/* ── Base card ── */
+.stat-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 26px 28px;
+  background: rgba(10, 26, 66, 0.55);
+  border: 1px solid rgba(59, 125, 232, 0.15);
+  border-top-width: 3px;           /* accent stripe overridden per card */
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: border-color 0.22s, box-shadow 0.22s, transform 0.22s;
+  overflow: hidden;
+}
+
+/* subtle inner glow on hover */
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Label ── */
+.stat-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+/* ── Value ── */
+.stat-value {
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+/* ══════════════════════════════
+   Per-card accent colours
+   Top border + value tint + hover glow
+══════════════════════════════ */
+
+/* Total Capacity — blue (#3b7de8) */
+.stat-card--total {
+  border-top-color: var(--accent);
+}
+.stat-card--total .stat-value {
+  color: var(--accent-lt);
+}
+.stat-card--total:hover {
+  border-color: rgba(59, 125, 232, 0.45);
+  box-shadow: 0 8px 28px rgba(59, 125, 232, 0.15);
+}
+
+/* Occupied — amber (#f59e0b) */
+.stat-card--occupied {
+  border-top-color: #f59e0b;
+}
+.stat-card--occupied .stat-value {
+  color: #fbbf24;
+}
+.stat-card--occupied:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 8px 28px rgba(245, 158, 11, 0.12);
+}
+
+/* Available — green (#4ade80) */
+.stat-card--available {
+  border-top-color: #4ade80;
+}
+.stat-card--available .stat-value {
+  color: #4ade80;
+}
+.stat-card--available:hover {
+  border-color: rgba(74, 222, 128, 0.4);
+  box-shadow: 0 8px 28px rgba(74, 222, 128, 0.12);
+}
+
+/* Reserved — teal (#22d3ee) */
+.stat-card--reserved {
+  border-top-color: var(--teal);
+}
+.stat-card--reserved .stat-value {
+  color: var(--teal);
+}
+.stat-card--reserved:hover {
+  border-color: rgba(34, 211, 238, 0.4);
+  box-shadow: 0 8px 28px rgba(34, 211, 238, 0.12);
+}
+
+/* ══════════════════════════════
+   Responsive
+══════════════════════════════ */
+
+/* ≤ 1024px — tighten gap slightly (sidebar narrows) */
+@media (max-width: 1024px) {
+  .stat-cards {
+    gap: 16px;
+  }
+  .stat-card {
+    padding: 22px 22px;
+  }
+  .stat-value {
+    font-size: 2.2rem;
+  }
+}
+
+/* ≤ 768px — auto-fit naturally wraps to 2 columns around this width */
+@media (max-width: 768px) {
+  .stat-cards {
+    gap: 14px;
+  }
+  .stat-card {
+    padding: 20px 20px;
+  }
+  .stat-value {
+    font-size: 2rem;
+  }
+}
+
+/* ══════════════════════════════
+   Recent Activity Card
+══════════════════════════════ */
+
+.recent-activity {
+  margin-top: 24px;
+  padding: 26px 28px;
+  background: rgba(10, 26, 66, 0.55);
+  border: 1px solid rgba(59, 125, 232, 0.15);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.recent-activity__title {
+  margin: 0 0 20px 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* ── Activity list ── */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(59, 125, 232, 0.08);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* ── Badge (event type label) ── */
+.activity-badge {
+  flex-shrink: 0;
+  min-width: 148px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.activity-badge--entered { color: #3b7de8; }   /* Blue  – Vehicle Entered  */
+.activity-badge--created { color: #f59e0b; }   /* Yellow – Booking Created */
+.activity-badge--exited  { color: #ef4444; }   /* Red   – Vehicle Exited   */
+.activity-badge--expired { color: #f97316; }   /* Orange – Booking Expired */
+
+/* ── Details (plate + vehicle) ── */
+.activity-details {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.activity-plate {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: rgba(59, 125, 232, 0.1);
+  border: 1px solid rgba(59, 125, 232, 0.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.activity-vehicle {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* ── Time ── */
+.activity-time {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+/* ── Recent Activity responsive ── */
+@media (max-width: 768px) {
+  .recent-activity {
+    padding: 20px 20px;
+  }
+  .activity-badge {
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .activity-item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .activity-badge {
+    min-width: unset;
+    width: 100%;
+  }
+  .activity-time {
+    margin-left: 0;
+  }
+}
+
+/* ══════════════════════════════
+   Responsive (stat cards)
+══════════════════════════════ */
+
+/* ≤ 380px — force single column */
+@media (max-width: 380px) {
+  .stat-cards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .stat-card {
+    padding: 18px 18px;
+  }
+  .stat-value {
+    font-size: 1.8rem;
+  }
+}

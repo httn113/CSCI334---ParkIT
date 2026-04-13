@@ -1,0 +1,498 @@
+/* ═══════════════════════════════════════════
+   ParkIT – myprofile.css  |  User Profile Page
+   ═══════════════════════════════════════════ */
+
+.profile-page {
+  padding: 36px 40px;
+  width: 100%;
+  max-width: 760px;
+  animation: profile-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes profile-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section heading ── */
+.profile-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  margin-top: 32px;
+}
+
+.profile-section-title:first-child { margin-top: 0; }
+
+/* ── Card container ── */
+.profile-card {
+  background: rgba(10, 26, 66, 0.55);
+  border: 1px solid rgba(59, 125, 232, 0.15);
+  border-radius: 14px;
+  padding: 28px;
+  backdrop-filter: blur(10px);
+}
+
+/* ── Row (First + Last name side by side) ── */
+.profile-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+/* ── Field group ── */
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 20px;
+}
+
+.profile-field:last-child { margin-bottom: 0; }
+
+.profile-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.profile-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.profile-input {
+  width: 100%;
+  padding: 11px 16px;
+  background: rgba(7, 19, 48, 0.7);
+  border: 1px solid rgba(59, 125, 232, 0.18);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 0;
+}
+
+.profile-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 125, 232, 0.15);
+}
+
+.profile-input.has-icon { padding-right: 44px; }
+
+/* ── Show/hide password toggle ── */
+.toggle-pw {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.2s;
+}
+
+.toggle-pw:hover { color: var(--accent-lt); }
+.toggle-pw svg   { width: 17px; height: 17px; stroke: currentColor; }
+
+/* ── License plate card ── */
+.plate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.plate-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(7, 19, 48, 0.6);
+  border: 1px solid rgba(59, 125, 232, 0.2);
+  border-radius: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.plate-card:hover {
+  border-color: rgba(59, 125, 232, 0.4);
+  box-shadow: 0 0 0 1px rgba(59, 125, 232, 0.1);
+}
+
+.plate-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+}
+
+.plate-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  background: rgba(59, 125, 232, 0.12);
+  border: 1.5px solid rgba(59, 125, 232, 0.35);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--accent-lt);
+  font-family: 'Courier New', monospace;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.plate-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.plate-model {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plate-tag {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* ── Edit button inside plate card ── */
+.plate-edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: rgba(59, 125, 232, 0.1);
+  border: 1px solid rgba(59, 125, 232, 0.25);
+  border-radius: 8px;
+  color: var(--accent-lt);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.plate-edit-btn:hover {
+  background: rgba(59, 125, 232, 0.2);
+  border-color: rgba(59, 125, 232, 0.5);
+}
+
+.plate-edit-btn svg { width: 14px; height: 14px; stroke: currentColor; }
+
+/* ── Add license plate button ── */
+.add-plate-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  background: linear-gradient(135deg, var(--accent), #2563eb);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(59, 125, 232, 0.3);
+  transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
+}
+
+.add-plate-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(59, 125, 232, 0.45);
+  filter: brightness(1.08);
+}
+
+.add-plate-btn:active { transform: translateY(0); }
+.add-plate-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+
+/* ══════════════════════════════════
+   ADD LICENSE PLATE MODAL
+   ══════════════════════════════════ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 10, 30, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fade-in 0.2s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  background: rgba(10, 24, 60, 0.97);
+  border: 1px solid rgba(59, 125, 232, 0.25);
+  border-radius: 18px;
+  padding: 36px 32px 28px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  animation: slide-up 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  margin: 16px;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Close (X) button ── */
+.modal-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 80, 80, 0.15);
+  border-color: rgba(255, 80, 80, 0.3);
+  color: #ff6b6b;
+}
+
+.modal-close-btn svg { width: 16px; height: 16px; }
+
+/* ── Modal title ── */
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 24px;
+}
+
+/* ── Field group inside modal ── */
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.modal-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.modal-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(7, 19, 48, 0.8);
+  border: 1px solid rgba(59, 125, 232, 0.2);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.modal-input::placeholder { color: var(--text-muted); }
+
+.modal-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 125, 232, 0.15);
+}
+
+.modal-input-error {
+  border-color: #f87171 !important;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15) !important;
+}
+
+.modal-error {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #f87171;
+  margin-top: 2px;
+}
+
+.modal-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.modal-select option {
+  background: #0a1840;
+  color: var(--text-primary);
+}
+
+/* ── Done button ── */
+.modal-done-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--accent), #2563eb);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(59, 125, 232, 0.3);
+  transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
+}
+
+.modal-done-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(59, 125, 232, 0.45);
+  filter: brightness(1.08);
+}
+
+.modal-done-btn:active { transform: translateY(0); }
+
+/* ══════════════════════════════════
+   TABLET  (≤ 1024px)
+   ══════════════════════════════════ */
+@media (max-width: 1024px) {
+  .profile-page {
+    padding: 28px 32px;
+  }
+}
+
+/* ══════════════════════════════════
+   MOBILE  (≤ 768px)
+   ══════════════════════════════════ */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 24px 20px;
+  }
+
+  .profile-card {
+    padding: 20px 18px;
+  }
+}
+
+/* ══════════════════════════════════
+   SMALL MOBILE  (≤ 540px)
+   ══════════════════════════════════ */
+@media (max-width: 540px) {
+  .profile-page {
+    padding: 20px 16px;
+  }
+
+  .profile-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .profile-card {
+    padding: 18px 16px;
+  }
+
+  .plate-card {
+    padding: 14px 16px;
+  }
+
+  .plate-badge {
+    font-size: 0.85rem;
+    letter-spacing: 0.07em;
+    padding: 7px 11px;
+  }
+}
+
+/* ══════════════════════════════════
+   EXTRA SMALL  (≤ 420px)
+   ══════════════════════════════════ */
+@media (max-width: 420px) {
+  .profile-page {
+    padding: 16px 12px;
+  }
+
+  .profile-card {
+    padding: 16px 14px;
+  }
+
+  .plate-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .plate-info {
+    width: 100%;
+  }
+
+  .plate-edit-btn {
+    align-self: flex-end;
+  }
+
+  .add-plate-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ══════════════════════════════════
+   MINIMUM (≤ 360px)
+   ══════════════════════════════════ */
+@media (max-width: 360px) {
+  .plate-badge {
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    padding: 6px 10px;
+  }
+
+  .profile-input {
+    font-size: 0.85rem;
+    padding: 10px 14px;
+  }
+}
