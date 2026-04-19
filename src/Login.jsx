@@ -48,7 +48,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/auth/signin', {
+      const res = await fetch('http://127.0.0.1:5000/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail, password }),
@@ -92,7 +92,7 @@ export default function Login() {
     setRegLoading(true);
 
     // ─── TODO (Backend): Call POST /auth/signup here ──────────────────────────
-    // Endpoint : POST http://localhost:5000/auth/signup
+    // Endpoint : POST http://127.0.0.1:5000/auth/signup
     // Headers  : { 'Content-Type': 'application/json' }
     // Body     : {
     //               customerFName : firstName.trim(),
