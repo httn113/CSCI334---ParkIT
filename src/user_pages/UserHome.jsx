@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardLayout from '../DashboardLayout.jsx';
+import './UserPortalTheme.css';
 
 const MyBookings = lazy(() => import('./MyBookings.jsx'));
 const FindParking = lazy(() => import('./FindParking.jsx'));
@@ -70,6 +71,7 @@ export default function UserHome() {
       subtitle="User Portal"
       avatarLetter="U"
       badgeText="Online"
+      layoutClassName="user-portal"
     >
       <Routes>
         <Route path="my-bookings" element={<MyBookings />} />

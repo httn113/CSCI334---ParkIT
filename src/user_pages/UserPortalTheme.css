@@ -1,0 +1,231 @@
+/* ═══════════════════════════════════════════════════════
+   ParkIT – UserPortalTheme.css
+   Scoped to .user-portal — does NOT affect admin layout
+   ═══════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────
+   ANIMATED BACKGROUND  –  .parkit-main
+   Two floating radial blobs + a slow gradient sweep
+   behind all page content
+───────────────────────────────────────────────────── */
+.user-portal .parkit-main {
+  position: relative;
+  isolation: isolate;
+  /* override the static body background so the blobs show */
+  background: transparent;
+}
+
+/* The layered animated background sits behind everything */
+.user-portal .parkit-main::before {
+  content: '';
+  position: fixed;
+  /* Cover the main area only (left of sidebar) */
+  inset: 0 0 0 var(--sidebar-w);
+  pointer-events: none;
+  z-index: 0;
+
+  /* 3-layer mesh: two radial blobs + a sweeping linear gradient */
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 30%, rgba(59, 125, 232, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 45% at 80% 70%, rgba(34, 211, 238, 0.14) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 60% at 50% 10%, rgba(96, 165, 250, 0.08) 0%, transparent 75%),
+    linear-gradient(
+      135deg,
+      #040d1f 0%,
+      #071330 25%,
+      #0a1a42 50%,
+      #071330 75%,
+      #040d1f 100%
+    );
+  background-size: 200% 200%, 200% 200%, 200% 200%, 400% 400%;
+  animation: mesh-drift 20s ease-in-out infinite alternate,
+             gradient-shift 28s linear infinite;
+}
+
+/* Blob 1: diagonal float */
+@keyframes mesh-drift {
+  0% {
+    background-position:
+      0%   30%,
+      100% 70%,
+      50%  0%,
+      0%   50%;
+  }
+  33% {
+    background-position:
+      40%  10%,
+      60%  90%,
+      20%  60%,
+      50%  0%;
+  }
+  66% {
+    background-position:
+      80%  50%,
+      20%  30%,
+      90%  20%,
+      100% 50%;
+  }
+  100% {
+    background-position:
+      20%  80%,
+      80%  20%,
+      60%  80%,
+      0%   100%;
+  }
+}
+
+/* Base linear gradient slow pan */
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%,   0% 100%, 100%  0%,  0%   0%; }
+  50%  { background-position: 100% 50%, 100% 0%,  0% 100%, 100% 100%; }
+  100% { background-position: 0% 50%,   0% 100%, 100%  0%,  0%   0%; }
+}
+
+/* Content layers must sit above the background pseudo-element */
+.user-portal .topbar {
+  position: relative;
+  z-index: 10;
+  /* keep the blur/tint so text stays legible over the animated bg */
+  background: rgba(4, 13, 31, 0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.user-portal .page-body {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─────────────────────────────────────────────────────
+   LOGO "ParkIT"  –  RGB keyboard sweep
+   White → light-blue → cyan → white, looping
+───────────────────────────────────────────────────── */
+.user-portal .brand-name {
+  background-image: linear-gradient(
+    90deg,
+    #ffffff   0%,
+    #a5c8ff  10%,
+    #5f9eff  22%,
+    #22d3ee  36%,
+    #67e8f9  48%,
+    #e8eef7  60%,
+    #ffffff  72%,
+    #5f9eff  84%,
+    #22d3ee  92%,
+    #ffffff 100%
+  );
+  background-size: 250% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: brand-rgb-sweep 4s linear infinite;
+}
+
+@keyframes brand-rgb-sweep {
+  0%   { background-position: 0%   center; }
+  100% { background-position: 250% center; }
+}
+
+/* Brand icon: subtle matching glow pulse */
+.user-portal .brand-icon {
+  animation: brand-icon-glow 4s ease-in-out infinite;
+}
+
+@keyframes brand-icon-glow {
+  0%, 100% {
+    box-shadow: 0 4px 18px rgba(59, 125, 232, 0.4);
+  }
+  33% {
+    box-shadow: 0 4px 22px rgba(34, 211, 238, 0.55), 0 0 14px rgba(34, 211, 238, 0.3);
+  }
+  66% {
+    box-shadow: 0 4px 22px rgba(96, 165, 250, 0.55), 0 0 14px rgba(96, 165, 250, 0.3);
+  }
+}
+
+/* ─────────────────────────────────────────────────────
+   BADGE "Online"  –  green shimmer + glow
+───────────────────────────────────────────────────── */
+.user-portal .topbar-badge {
+  position: relative;
+  overflow: hidden;
+  /* animated text gradient for the label */
+  background: rgba(74, 222, 128, 0.13);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+  animation: online-pulse 2.5s ease-in-out infinite;
+}
+
+/* Shimmer sweep over the badge */
+.user-portal .topbar-badge::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(74, 222, 128, 0.45) 50%,
+    transparent 100%
+  );
+  border-radius: inherit;
+  animation: badge-shimmer 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes online-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.35),
+                0 0 8px rgba(74, 222, 128, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(74, 222, 128, 0),
+                0 0 18px rgba(74, 222, 128, 0.35);
+  }
+}
+
+@keyframes badge-shimmer {
+  0%   { left: -60%; opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { left: 130%; opacity: 0; }
+}
+
+/* ─────────────────────────────────────────────────────
+   REDUCED MOTION  –  disable all animated background,
+   but keep static gradient on brand text
+───────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .user-portal .parkit-main::before {
+    animation: none;
+    background-position: center center;
+  }
+
+  .user-portal .brand-name {
+    animation: none;
+    background-position: 0% center;
+  }
+
+  .user-portal .brand-icon {
+    animation: none;
+  }
+
+  .user-portal .topbar-badge {
+    animation: none;
+  }
+
+  .user-portal .topbar-badge::after {
+    display: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────
+   MOBILE – fix pseudo-element when sidebar collapses
+───────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .user-portal .parkit-main::before {
+    inset: 0;
+  }
+}

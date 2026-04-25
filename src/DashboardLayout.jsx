@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import './DashboardLayout.css';
 
-export default function DashboardLayout({ navItems, title, subtitle, avatarLetter, badgeText, children }) {
+export default function DashboardLayout({ navItems, title, subtitle, avatarLetter, badgeText, layoutClassName, children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ export default function DashboardLayout({ navItems, title, subtitle, avatarLette
   }, [mobileMenuOpen]);
 
   return (
-    <div className="parkit-layout">
+    <div className={['parkit-layout', layoutClassName].filter(Boolean).join(' ')}>
       {/* Sidebar */}
       <aside className={`parkit-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
