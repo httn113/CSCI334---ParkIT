@@ -1,4 +1,5 @@
 import './Subscribtion.css';
+import PricingCard from '../components/PricingCard';
 
 const TIERS = [
   {
@@ -28,7 +29,7 @@ const TIERS = [
     features: [
       'Lower booking fees during non-busy times.',
       'Single booking up to 24 hours.',
-      '“Time expiring” alerts; extend your parking session from your phone.',
+      '"Time expiring" alerts; extend your parking session from your phone.',
       'Special gift voucher during your birthday month.',
       'Double loyalty points per hour during non-busy times.',
       'Lower penalty pricing if you exceed your booked hours.',
@@ -124,38 +125,7 @@ export default function Subscribtion() {
 
       <div className="subscribtion-grid">
         {TIERS.map((tier) => (
-          <article
-            key={tier.id}
-            className={`subscribtion-card subscribtion-card--${tier.variant}`}
-          >
-            <h2 className="subscribtion-card-name">{tier.name}</h2>
-            <div className="subscribtion-price-row">
-              <span className="subscribtion-price">{tier.price}</span>
-              {tier.priceNote ? (
-                <span className="subscribtion-price-note">{tier.priceNote}</span>
-              ) : null}
-            </div>
-            {tier.includes ? (
-              <p className="subscribtion-includes">{tier.includes}</p>
-            ) : (
-              <p className="subscribtion-includes subscribtion-includes--lead">
-                Our no-cost tier for everyday parking.
-              </p>
-            )}
-            <ul className="subscribtion-features">
-              {tier.features.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-            <div className="subscribtion-card-cta">
-              <button
-                type="button"
-                className={`subscribtion-btn subscribtion-btn--${tier.variant}${tier.ctaCurrent ? ' subscribtion-btn--current' : ''}`}
-              >
-                {tier.ctaLabel}
-              </button>
-            </div>
-          </article>
+          <PricingCard key={tier.id} tier={tier} />
         ))}
       </div>
 
@@ -181,15 +151,9 @@ export default function Subscribtion() {
                   <th scope="row" className="subscribtion-compare-feature">
                     {row.feature}
                   </th>
-                  <td>
-                    <CompareCell cell={row.standard} />
-                  </td>
-                  <td>
-                    <CompareCell cell={row.premium} />
-                  </td>
-                  <td>
-                    <CompareCell cell={row.gold} />
-                  </td>
+                  <td><CompareCell cell={row.standard} /></td>
+                  <td><CompareCell cell={row.premium} /></td>
+                  <td><CompareCell cell={row.gold} /></td>
                 </tr>
               ))}
             </tbody>

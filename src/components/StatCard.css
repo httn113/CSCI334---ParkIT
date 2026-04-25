@@ -1,0 +1,38 @@
+.stat-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px 24px;
+  min-width: 0;
+}
+
+.stat-card-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+}
+
+.stat-card-number {
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+}
+
+.stat-card-number.available {
+  color: #4ade80;
+}
+
+@media (max-width: 480px) {
+  .stat-card {
+    padding: 16px 18px;
+  }
+
+  .stat-card-number {
+    font-size: 2rem;
+  }
+}

@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import './MyBookings.css';
+import SectionTitle from '../components/SectionTitle';
+import GlassCard from '../components/GlassCard';
+import StatCard from '../components/StatCard';
+import QuickActionCard from '../components/QuickActionCard';
 
 // TODO: Replace mock data with real user/booking data from backend
 const MOCK_USER = 'User';
@@ -12,6 +16,22 @@ const MOCK_BOOKING = {
   brand: 'Mercedes C200',
   status: 'Ready To Park',
 };
+
+const MapIcon = (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+    <line x1="9" y1="3" x2="9" y2="18" />
+    <line x1="15" y1="6" x2="15" y2="21" />
+  </svg>
+);
+
+const BookIcon = (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="16" />
+    <line x1="8" y1="12" x2="16" y2="12" />
+  </svg>
+);
 
 export default function MyBookings() {
   const { spot, zone, endTime, licensePlate, brand, status } = MOCK_BOOKING;
@@ -42,8 +62,8 @@ export default function MyBookings() {
       <p className="bookings-datetime">{dayName}, {dateStr} · {timeStr}</p>
 
       {/* ── Active booking card ── */}
-      <p className="bookings-section-title">Active Booking</p>
-      <div className="booking-card">
+      <SectionTitle>Active Booking</SectionTitle>
+      <GlassCard className="booking-card">
 
         {/* Spot + Zone */}
         <div className="booking-header">
@@ -81,71 +101,40 @@ export default function MyBookings() {
           </div>
 
         </div>
-      </div>
+      </GlassCard>
 
       {/* ── Spot info cards ── */}
-      <p className="bookings-section-title" style={{ marginTop: 28 }}>Parking Overview</p>
+      <SectionTitle style={{ marginTop: 28 }}>Parking Overview</SectionTitle>
       <div className="spot-cards-row">
-
-        <div className="spot-card">
-          <span className="spot-card-label">Available Spots</span>
-          <span className="spot-card-number available">10</span>
-        </div>
-
-        <div className="spot-card">
-          <span className="spot-card-label">Visitor Spots</span>
-          <span className="spot-card-number visitor">5</span>
-        </div>
-
+        <StatCard label="Available Spots" value={10} colorClass="available" />
+        <StatCard label="Visitor Spots" value={5} />
       </div>
 
       {/* ── Quick Actions ── */}
-      <p className="bookings-section-title" style={{ marginTop: 28 }}>Quick Actions</p>
+      <SectionTitle style={{ marginTop: 28 }}>Quick Actions</SectionTitle>
       <div className="quick-actions-col">
-
-        <button className="quick-action-card">
-          <div className="quick-action-icon map-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-              <line x1="9" y1="3" x2="9" y2="18"/>
-              <line x1="15" y1="6" x2="15" y2="21"/>
-            </svg>
-          </div>
-          <div className="quick-action-text">
-            <span className="quick-action-title">View Parking Map</span>
-            <span className="quick-action-sub">See all zones &amp; availability</span>
-          </div>
-          <svg className="quick-action-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-
-        <button className="quick-action-card accent">
-          <div className="quick-action-icon book-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="16"/>
-              <line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>
-          </div>
-          <div className="quick-action-text">
-            <span className="quick-action-title">Book A Spot</span>
-            <span className="quick-action-sub">Reserve your parking space</span>
-          </div>
-          <svg className="quick-action-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-
+        <QuickActionCard
+          icon={MapIcon}
+          iconClassName="map-icon"
+          title="View Parking Map"
+          subtitle="See all zones &amp; availability"
+        />
+        <QuickActionCard
+          icon={BookIcon}
+          iconClassName="book-icon"
+          title="Book A Spot"
+          subtitle="Reserve your parking space"
+          accent
+        />
       </div>
 
       {/* ── Notifications ── */}
-      <p className="bookings-section-title" style={{ marginTop: 28 }}>Notifications</p>
+      <SectionTitle style={{ marginTop: 28 }}>Notifications</SectionTitle>
       <div className="notification-card peak-alert">
         <div className="notif-icon-wrap">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
         </div>
         <div className="notif-text">

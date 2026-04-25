@@ -1,0 +1,69 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 10, 30, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: modal-fade-in 0.2s ease;
+}
+
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  background: rgba(10, 24, 60, 0.97);
+  border: 1px solid rgba(59, 125, 232, 0.25);
+  border-radius: 18px;
+  padding: 36px 32px 28px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  animation: modal-slide-up 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  margin: 16px;
+}
+
+@keyframes modal-slide-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-muted, #7a8aaa);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 80, 80, 0.15);
+  border-color: rgba(255, 80, 80, 0.3);
+  color: #ff6b6b;
+}
+
+.modal-close-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary, #e2e8f0);
+  margin: 0 0 24px;
+}

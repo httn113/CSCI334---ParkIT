@@ -1,0 +1,9 @@
+.section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted, #7a8aaa);
+  margin-bottom: 14px;
+  margin-top: 0;
+}

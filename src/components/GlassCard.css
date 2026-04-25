@@ -1,0 +1,6 @@
+.glass-card {
+  background: rgba(10, 26, 66, 0.55);
+  border: 1px solid rgba(59, 125, 232, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+}

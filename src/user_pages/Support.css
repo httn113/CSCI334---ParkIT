@@ -142,116 +142,21 @@
   color: var(--accent-lt, #7baaf7);
 }
 
-/* ── Section label ── */
-.support-section-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted, #7a8aaa);
-  margin: 0 0 14px 0;
-}
-
+/* ── Result count highlight ── */
 .support-result-count {
   color: var(--accent-lt, #7baaf7);
   font-weight: 700;
 }
 
-/* ── Shared card ── */
-.support-card {
-  background: rgba(10, 26, 66, 0.55);
-  border: 1px solid rgba(59, 125, 232, 0.2);
-  border-radius: 16px;
-  backdrop-filter: blur(12px);
+/* ── FAQ card layout (glass style from GlassCard) ── */
+.faq-card {
+  padding: 6px 0;
   overflow: hidden;
 }
 
-/* ── FAQ accordion ── */
-.faq-card {
-  padding: 6px 0;
-}
-
-.faq-item {
-  padding: 0 28px;
-}
-
-.faq-question {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  width: 100%;
-  padding: 18px 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.93rem;
-  font-weight: 600;
-  color: #ffffff;
-  transition: color 0.2s;
-}
-
-.faq-question:hover { color: var(--accent-lt, #7baaf7); }
-
-.faq-item.open .faq-question { color: var(--accent-lt, #7baaf7); }
-
-.faq-chevron {
-  flex-shrink: 0;
-  color: var(--text-muted, #7a8aaa);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
-}
-
-.faq-chevron.open {
-  transform: rotate(180deg);
-  color: var(--accent-lt, #7baaf7);
-}
-
-.faq-answer {
-  padding-bottom: 18px;
-  font-size: 0.87rem;
-  line-height: 1.65;
-  color: #ffffff;
-  animation: faq-open 0.22s ease;
-}
-
-@keyframes faq-open {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.faq-divider {
-  height: 1px;
-  background: rgba(59, 125, 232, 0.1);
-  margin: 0 28px;
-}
-
-/* ── Empty state ── */
-.support-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 52px 24px;
-  background: rgba(10, 26, 66, 0.55);
-  border: 1px solid rgba(59, 125, 232, 0.2);
-  border-radius: 16px;
-  color: var(--text-muted, #7a8aaa);
-  text-align: center;
-}
-
-.support-empty-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 4px 0 0 0;
-}
-
-.support-empty-body {
-  font-size: 0.83rem;
-  color: var(--text-muted, #7a8aaa);
-  margin: 0;
+/* ── Contact card layout (glass style from GlassCard) ── */
+.contact-card {
+  padding: 28px;
 }
 
 /* ── Still need help? ── */
@@ -298,10 +203,6 @@
 }
 
 /* ── Contact form ── */
-.contact-card {
-  padding: 28px;
-}
-
 .contact-form {
   display: flex;
   flex-direction: column;
@@ -312,20 +213,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
-}
-
-.contact-field {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.contact-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #ffffff;
 }
 
 .contact-input {
@@ -540,12 +427,6 @@
 
   .support-tab { padding: 8px 13px; font-size: 0.78rem; gap: 5px; }
 
-  .faq-item { padding: 0 18px; }
-
-  .faq-divider { margin: 0 18px; }
-
-  .faq-question { font-size: 0.88rem; }
-
   .support-still-help { flex-direction: column; align-items: flex-start; gap: 12px; }
 
   .support-still-help-btn { align-self: stretch; justify-content: center; }
@@ -564,12 +445,4 @@
   .support-tab { padding: 10px 12px; }
 
   .contact-card { padding: 16px 14px; }
-}
-
-.contact-error {
-  display: block;
-  margin-top: 4px;
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: #f87171;
 }

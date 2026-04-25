@@ -1,0 +1,26 @@
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 52px 24px;
+  background: rgba(10, 26, 66, 0.55);
+  border: 1px solid rgba(59, 125, 232, 0.2);
+  border-radius: 16px;
+  color: var(--text-muted, #7a8aaa);
+  text-align: center;
+  backdrop-filter: blur(12px);
+}
+
+.empty-state-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 4px 0 0 0;
+}
+
+.empty-state-body {
+  font-size: 0.83rem;
+  color: var(--text-muted, #7a8aaa);
+  margin: 0;
+}

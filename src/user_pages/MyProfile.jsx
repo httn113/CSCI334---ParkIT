@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import './MyProfile.css';
+import SectionTitle from '../components/SectionTitle';
+import GlassCard from '../components/GlassCard';
+import Modal from '../components/Modal';
+import FormField from '../components/FormField';
 
 // DEMO ONLY -- replace with data fetched from backend
 const USER_DATA = {
@@ -92,8 +96,8 @@ export default function MyProfile() {
     <div className="profile-page">
 
       {/* ── Personal Info ── */}
-      <p className="profile-section-title">Personal Information</p>
-      <div className="profile-card">
+      <SectionTitle>Personal Information</SectionTitle>
+      <GlassCard className="profile-card">
 
         {/* First Name + Last Name on same row */}
         <div className="profile-row">
@@ -145,11 +149,11 @@ export default function MyProfile() {
           </div>
         </div>
 
-      </div>
+      </GlassCard>
 
       {/* ── License Plates ── */}
-      <p className="profile-section-title">Registered License Plates</p>
-      <div className="profile-card">
+      <SectionTitle style={{ marginTop: 32 }}>Registered License Plates</SectionTitle>
+      <GlassCard className="profile-card">
 
         <div className="plate-list">
           {plates.map((item) => (
@@ -178,7 +182,6 @@ export default function MyProfile() {
           ))}
         </div>
 
-        {/* Add License Plate */}
         <button
           id="profile-add-plate"
           type="button"
@@ -192,112 +195,83 @@ export default function MyProfile() {
           Add License Plate
         </button>
 
-      </div>
+      </GlassCard>
 
       {/* ── Add License Plate Modal ── */}
-      {showAddPlate && (
-        <div className="modal-overlay" onClick={closeAddPlate}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <Modal title="Add License Plate" open={showAddPlate} onClose={closeAddPlate}>
 
-            {/* Close button */}
-            <button type="button" className="modal-close-btn" onClick={closeAddPlate} aria-label="Close">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
+        <FormField label="License Plate Number" error={formErrors.licenseNo} htmlFor="ap-licenseNo">
+          <input
+            id="ap-licenseNo"
+            name="licenseNo"
+            type="text"
+            className={`modal-input${formErrors.licenseNo ? ' modal-input-error' : ''}`}
+            placeholder="e.g. ABC-1234"
+            value={plateForm.licenseNo}
+            onChange={handlePlateFormChange}
+          />
+        </FormField>
 
-            <h2 className="modal-title">Add License Plate</h2>
+        <FormField label="Car Color" error={formErrors.color} htmlFor="ap-color">
+          <input
+            id="ap-color"
+            name="color"
+            type="text"
+            className={`modal-input${formErrors.color ? ' modal-input-error' : ''}`}
+            placeholder="e.g. Pearl White"
+            value={plateForm.color}
+            onChange={handlePlateFormChange}
+          />
+        </FormField>
 
-            {/* License No */}
-            <div className="modal-field">
-              <label className="modal-label" htmlFor="ap-licenseNo">License Plate Number</label>
-              <input
-                id="ap-licenseNo"
-                name="licenseNo"
-                type="text"
-                className={`modal-input${formErrors.licenseNo ? ' modal-input-error' : ''}`}
-                placeholder="e.g. ABC-1234"
-                value={plateForm.licenseNo}
-                onChange={handlePlateFormChange}
-              />
-              {formErrors.licenseNo && <span className="modal-error">{formErrors.licenseNo}</span>}
-            </div>
+        <FormField label="Car Brand" error={formErrors.brand} htmlFor="ap-brand">
+          <select
+            id="ap-brand"
+            name="brand"
+            className={`modal-input modal-select${formErrors.brand ? ' modal-input-error' : ''}`}
+            value={plateForm.brand}
+            onChange={handlePlateFormChange}
+          >
+            <option value="" disabled>Select brand</option>
+            {CAR_BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
+          </select>
+        </FormField>
 
-            {/* Car Color */}
-            <div className="modal-field">
-              <label className="modal-label" htmlFor="ap-color">Car Color</label>
-              <input
-                id="ap-color"
-                name="color"
-                type="text"
-                className={`modal-input${formErrors.color ? ' modal-input-error' : ''}`}
-                placeholder="e.g. Pearl White"
-                value={plateForm.color}
-                onChange={handlePlateFormChange}
-              />
-              {formErrors.color && <span className="modal-error">{formErrors.color}</span>}
-            </div>
+        <FormField label="Car Model" error={formErrors.model} htmlFor="ap-model">
+          <input
+            id="ap-model"
+            name="model"
+            type="text"
+            className={`modal-input${formErrors.model ? ' modal-input-error' : ''}`}
+            placeholder="e.g. Camry, 3 Series, C-Class"
+            value={plateForm.model}
+            onChange={handlePlateFormChange}
+          />
+        </FormField>
 
-            {/* Car Brand */}
-            <div className="modal-field">
-              <label className="modal-label" htmlFor="ap-brand">Car Brand</label>
-              <select
-                id="ap-brand"
-                name="brand"
-                className={`modal-input modal-select${formErrors.brand ? ' modal-input-error' : ''}`}
-                value={plateForm.brand}
-                onChange={handlePlateFormChange}
-              >
-                <option value="" disabled>Select brand</option>
-                {CAR_BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
-              </select>
-              {formErrors.brand && <span className="modal-error">{formErrors.brand}</span>}
-            </div>
+        <FormField label="Car Type" error={formErrors.type} htmlFor="ap-type">
+          <select
+            id="ap-type"
+            name="type"
+            className={`modal-input modal-select${formErrors.type ? ' modal-input-error' : ''}`}
+            value={plateForm.type}
+            onChange={handlePlateFormChange}
+          >
+            <option value="" disabled>Select type</option>
+            {CAR_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </FormField>
 
-            {/* Car Model */}
-            <div className="modal-field">
-              <label className="modal-label" htmlFor="ap-model">Car Model</label>
-              <input
-                id="ap-model"
-                name="model"
-                type="text"
-                className={`modal-input${formErrors.model ? ' modal-input-error' : ''}`}
-                placeholder="e.g. Camry, 3 Series, C-Class"
-                value={plateForm.model}
-                onChange={handlePlateFormChange}
-              />
-              {formErrors.model && <span className="modal-error">{formErrors.model}</span>}
-            </div>
+        {/* Done – backend dev: connect handleAddPlateDone() to your API */}
+        <button
+          type="button"
+          className="modal-done-btn"
+          onClick={handleAddPlateDone}
+        >
+          Done
+        </button>
 
-            {/* Car Type */}
-            <div className="modal-field">
-              <label className="modal-label" htmlFor="ap-type">Car Type</label>
-              <select
-                id="ap-type"
-                name="type"
-                className={`modal-input modal-select${formErrors.type ? ' modal-input-error' : ''}`}
-                value={plateForm.type}
-                onChange={handlePlateFormChange}
-              >
-                <option value="" disabled>Select type</option>
-                {CAR_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
-              {formErrors.type && <span className="modal-error">{formErrors.type}</span>}
-            </div>
-
-            {/* Done – backend dev: connect handleAddPlateDone() to your API */}
-            <button
-              type="button"
-              className="modal-done-btn"
-              onClick={handleAddPlateDone}
-            >
-              Done
-            </button>
-
-          </div>
-        </div>
-      )}
+      </Modal>
 
     </div>
   );

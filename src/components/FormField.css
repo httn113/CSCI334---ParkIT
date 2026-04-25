@@ -1,0 +1,21 @@
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-field-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.form-field-error {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #f87171;
+  margin-top: 2px;
+}

@@ -14,26 +14,9 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Section heading ── */
-.profile-section-title {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 14px;
-  margin-top: 32px;
-}
-
-.profile-section-title:first-child { margin-top: 0; }
-
-/* ── Card container ── */
+/* ── Card layout (glass style from GlassCard) ── */
 .profile-card {
-  background: rgba(10, 26, 66, 0.55);
-  border: 1px solid rgba(59, 125, 232, 0.15);
-  border-radius: 14px;
   padding: 28px;
-  backdrop-filter: blur(10px);
 }
 
 /* ── Row (First + Last name side by side) ── */
@@ -235,93 +218,9 @@
 .add-plate-btn svg { width: 16px; height: 16px; stroke: currentColor; }
 
 /* ══════════════════════════════════
-   ADD LICENSE PLATE MODAL
+   MODAL FORM INPUTS
+   (Modal chrome from Modal.css, FormField wrapper from FormField.css)
    ══════════════════════════════════ */
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(3, 10, 30, 0.72);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fade-in 0.2s ease;
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-.modal-card {
-  position: relative;
-  width: 100%;
-  max-width: 460px;
-  background: rgba(10, 24, 60, 0.97);
-  border: 1px solid rgba(59, 125, 232, 0.25);
-  border-radius: 18px;
-  padding: 36px 32px 28px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
-  animation: slide-up 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-  margin: 16px;
-}
-
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Close (X) button ── */
-.modal-close-btn {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: background 0.18s, color 0.18s;
-}
-
-.modal-close-btn:hover {
-  background: rgba(255, 80, 80, 0.15);
-  border-color: rgba(255, 80, 80, 0.3);
-  color: #ff6b6b;
-}
-
-.modal-close-btn svg { width: 16px; height: 16px; }
-
-/* ── Modal title ── */
-.modal-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 24px;
-}
-
-/* ── Field group inside modal ── */
-.modal-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.modal-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
 
 .modal-input {
   width: 100%;
@@ -347,13 +246,6 @@
 .modal-input-error {
   border-color: #f87171 !important;
   box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15) !important;
-}
-
-.modal-error {
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: #f87171;
-  margin-top: 2px;
 }
 
 .modal-select {

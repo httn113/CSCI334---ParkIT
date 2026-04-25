@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import './FindParking.css';
+import SectionTitle from '../components/SectionTitle';
+import GlassCard from '../components/GlassCard';
+import FilterPillGroup from '../components/FilterPillGroup';
 
 const ZONES = [
   { id: 'a', label: 'Zone A' },
@@ -47,9 +50,9 @@ export default function FindParking() {
       <h1 className="fp-heading">Find Parking</h1>
 
       {/* ── Section 1: Date & Time picker ── */}
-      <p className="fp-section-title">Select Date &amp; Time</p>
+      <SectionTitle>Select Date &amp; Time</SectionTitle>
       <div className="fp-picker-row">
-        <div className="fp-picker-card">
+        <GlassCard className="fp-picker-card">
           {/* Date */}
           <div className="fp-field">
             <span className="fp-field-label">Date</span>
@@ -57,7 +60,7 @@ export default function FindParking() {
               type="date"
               className="fp-input"
               value={selectedDate}
-              min={new Date().toISOString().split('T')[0]} 
+              min={new Date().toISOString().split('T')[0]}
               onChange={(e) => setSelectedDate(e.target.value)}
             />
           </div>
@@ -107,29 +110,22 @@ export default function FindParking() {
           <button className="fp-find-btn" type="button">
             Find
           </button>
-        </div>
+        </GlassCard>
       </div>
 
       {/* ── Section 2: Zone filter tabs ── */}
-      <p className="fp-section-title">Filter by Zone</p>
-      <div className="fp-filter-row">
-        {FILTERS.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            className={`fp-filter-btn${selectedZone === f.id ? ' active' : ''}`}
-            onClick={() => setSelectedZone(f.id)}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <SectionTitle>Filter by Zone</SectionTitle>
+      <FilterPillGroup
+        items={FILTERS}
+        activeId={selectedZone}
+        onSelect={setSelectedZone}
+      />
 
       {/* ── Section 3: Zone cards ── */}
-      <p className="fp-section-title">Available Slots</p>
+      <SectionTitle>Available Slots</SectionTitle>
       <div className="fp-zones-grid">
         {visibleZones.map((zone) => (
-          <div key={zone.id} className="fp-zone-card">
+          <GlassCard key={zone.id} className="fp-zone-card">
             <div className="fp-zone-header">
               <div className="fp-zone-badge">{zone.label.split(' ')[1]}</div>
               <div className="fp-zone-meta">
@@ -148,7 +144,7 @@ export default function FindParking() {
                 </div>
               ))}
             </div>
-          </div>
+          </GlassCard>
         ))}
       </div>
     </div>

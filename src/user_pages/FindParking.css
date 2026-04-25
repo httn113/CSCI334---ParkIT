@@ -23,17 +23,6 @@
   letter-spacing: -0.01em;
 }
 
-/* ── Section label ── */
-.fp-section-title {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted, #7a8aaa);
-  margin-bottom: 14px;
-  margin-top: 0;
-}
-
 /* ══════════════════════════════════
    Section 1 – Date / Time picker row
    ══════════════════════════════════ */
@@ -44,17 +33,14 @@
   margin-bottom: 32px;
 }
 
+/* Layout for picker card (glass style from GlassCard) */
 .fp-picker-card {
   flex: 1;
   display: flex;
   align-items: center;
   gap: 20px;
   flex-wrap: wrap;
-  background: rgba(10, 26, 66, 0.55);
-  border: 1px solid rgba(59, 125, 232, 0.2);
-  border-radius: 16px;
   padding: 20px 26px;
-  backdrop-filter: blur(12px);
   min-width: 0;
 }
 
@@ -150,44 +136,6 @@
 }
 
 /* ══════════════════════════════════
-   Section 2 – Zone filter tabs
-   ══════════════════════════════════ */
-.fp-filter-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 28px;
-}
-
-.fp-filter-btn {
-  padding: 8px 20px;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
-  background: rgba(10, 26, 66, 0.55);
-  border: 1px solid rgba(59, 125, 232, 0.25);
-  color: var(--text-muted, #7a8aaa);
-  backdrop-filter: blur(8px);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.fp-filter-btn:hover {
-  border-color: rgba(59, 125, 232, 0.5);
-  color: var(--accent-lt, #7baaf7);
-  transform: translateY(-1px);
-}
-
-.fp-filter-btn.active {
-  background: linear-gradient(135deg, rgba(59, 125, 232, 0.35), rgba(37, 99, 235, 0.22));
-  border-color: rgba(59, 125, 232, 0.6);
-  color: #ffffff;
-}
-
-/* ══════════════════════════════════
    Section 3 – Zone cards grid
    ══════════════════════════════════ */
 .fp-zones-grid {
@@ -196,12 +144,9 @@
   gap: 20px;
 }
 
+/* Layout for zone card (glass style from GlassCard) */
 .fp-zone-card {
-  background: rgba(10, 26, 66, 0.55);
-  border: 1px solid rgba(59, 125, 232, 0.2);
-  border-radius: 16px;
   padding: 24px 28px;
-  backdrop-filter: blur(12px);
   animation: fp-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -321,20 +266,6 @@
   .fp-zone-card {
     padding: 20px 18px;
   }
-
-  /* Horizontally scrollable filter bar on mobile */
-  .fp-filter-row {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 6px;
-    /* Hide scrollbar visually but keep functionality */
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .fp-filter-row::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 /* ══════════════════════════════════
@@ -378,11 +309,6 @@
   .fp-select--duration {
     width: 100%;
     min-width: unset;
-  }
-
-  .fp-filter-btn {
-    padding: 8px 16px;
-    font-size: 0.8rem;
   }
 
   .fp-zone-card {
