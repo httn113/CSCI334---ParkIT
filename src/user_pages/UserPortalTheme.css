@@ -229,3 +229,408 @@
     inset: 0;
   }
 }
+
+/* Theme switch button inside topbar */
+.user-portal .theme-toggle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(59, 125, 232, 0.35);
+  background: rgba(59, 125, 232, 0.12);
+  color: #c9ddff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.user-portal .theme-toggle-btn:hover {
+  background: rgba(59, 125, 232, 0.22);
+  border-color: rgba(59, 125, 232, 0.6);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.user-portal .theme-toggle-btn:active {
+  transform: translateY(0);
+}
+
+.user-portal .theme-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.user-portal-body-light {
+  background: #eef5ff;
+  color: #0f172a;
+}
+
+/* Light theme scope for user portal */
+.user-portal--light {
+  --navy-950: #f4f9ff;
+  --navy-900: #ecf4ff;
+  --navy-850: #e4efff;
+  --navy-800: #d6e8ff;
+  --navy-700: #c6ddff;
+  --navy-600: #b4d1ff;
+  --text-primary: #0f2545;
+  --text-secondary: #456188;
+  --text-muted: #5d79a2;
+  --accent: #2f72df;
+  --accent-lt: #4b89ec;
+  --accent-glow: rgba(47, 114, 223, 0.24);
+  --teal: #1db6d4;
+}
+
+.user-portal--light .parkit-main::before {
+  background:
+    radial-gradient(ellipse 60% 50% at 22% 24%, rgba(79, 134, 230, 0.22) 0%, transparent 72%),
+    radial-gradient(ellipse 55% 45% at 78% 74%, rgba(34, 182, 212, 0.16) 0%, transparent 70%),
+    radial-gradient(ellipse 72% 60% at 50% 12%, rgba(96, 165, 250, 0.12) 0%, transparent 76%),
+    linear-gradient(145deg, #f7fbff 0%, #edf5ff 34%, #e6f1ff 68%, #f5faff 100%);
+}
+
+.user-portal--light .topbar {
+  background: rgba(241, 248, 255, 0.86);
+  border-bottom: 1px solid rgba(64, 124, 217, 0.2);
+}
+
+.user-portal--light .brand-name {
+  background-image: linear-gradient(
+    90deg,
+    #0d2d59 0%,
+    #2f72df 24%,
+    #1f90d5 50%,
+    #2f72df 78%,
+    #0d2d59 100%
+  );
+}
+
+.user-portal--light .brand-sub {
+  color: #4c6891;
+}
+
+.user-portal--light .brand-icon {
+  box-shadow: 0 4px 18px rgba(47, 114, 223, 0.3);
+}
+
+.user-portal--light .topbar-badge {
+  background: rgba(22, 163, 74, 0.12);
+  border-color: rgba(22, 163, 74, 0.28);
+  color: #15803d;
+}
+
+.user-portal--light .topbar-badge::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(22, 163, 74, 0.33) 50%,
+    transparent 100%
+  );
+}
+
+.user-portal--light .mobile-overlay {
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.user-portal--light .theme-toggle-btn {
+  background: rgba(47, 114, 223, 0.13);
+  border-color: rgba(47, 114, 223, 0.3);
+  color: #2c5ea8;
+}
+
+.user-portal--light .theme-toggle-btn:hover {
+  background: rgba(47, 114, 223, 0.22);
+  border-color: rgba(47, 114, 223, 0.5);
+  color: #173a69;
+}
+
+.user-portal--light .glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(47, 114, 223, 0.2);
+  box-shadow: 0 8px 24px rgba(70, 119, 196, 0.12);
+}
+
+/* FindParking + ReserveSpot */
+.user-portal--light .fp-heading,
+.user-portal--light .fp-zone-name,
+.user-portal--light .rs-confirm-title,
+.user-portal--light .bookings-welcome,
+.user-portal--light .support-hero-title,
+.user-portal--light .subscribtion-hero-title,
+.user-portal--light .subscribtion-compare-title,
+.user-portal--light .contact-success-title {
+  color: #163a66;
+}
+
+.user-portal--light .fp-input,
+.user-portal--light .fp-select,
+.user-portal--light .profile-input,
+.user-portal--light .modal-input,
+.user-portal--light .support-search-input,
+.user-portal--light .contact-input {
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(47, 114, 223, 0.24);
+  color: #1d3352;
+}
+
+.user-portal--light .fp-input[type="date"] {
+  color-scheme: light;
+}
+
+.user-portal--light .support-search-clear:hover,
+.user-portal--light .toggle-pw:hover {
+  color: #2f72df;
+}
+
+.user-portal--light .fp-zone-divider,
+.user-portal--light .booking-divider,
+.user-portal--light .rs-dl-row--total {
+  border-color: rgba(47, 114, 223, 0.2);
+  background: rgba(47, 114, 223, 0.2);
+}
+
+.user-portal--light .fp-slot {
+  background: rgba(22, 163, 74, 0.14);
+  border-color: rgba(22, 163, 74, 0.35);
+  color: #166534;
+}
+
+.user-portal--light a.fp-slot:hover {
+  background: rgba(22, 163, 74, 0.2);
+}
+
+.user-portal--light .rs-radio,
+.user-portal--light .rs-btn--secondary,
+.user-portal--light .rs-dl-row,
+.user-portal--light .rs-dl-row--strong dt,
+.user-portal--light .rs-dl-row--strong dd,
+.user-portal--light .booking-zone,
+.user-portal--light .booking-detail-value,
+.user-portal--light .support-still-help-text,
+.user-portal--light .contact-info-value,
+.user-portal--light .subscribtion-compare-table thead th,
+.user-portal--light .subscribtion-compare-table tbody th.subscribtion-compare-feature,
+.user-portal--light .subscribtion-compare-table tbody td {
+  color: #1e3a5f;
+}
+
+.user-portal--light .rs-dl-row dt,
+.user-portal--light .rs-rate-hint,
+.user-portal--light .bookings-datetime,
+.user-portal--light .booking-detail-label,
+.user-portal--light .booking-spot-label,
+.user-portal--light .notif-body,
+.user-portal--light .support-hero-sub,
+.user-portal--light .subscribtion-hero-sub,
+.user-portal--light .contact-success-body,
+.user-portal--light .contact-info-label {
+  color: #55739c;
+}
+
+.user-portal--light .rs-btn--secondary {
+  background: rgba(230, 240, 255, 0.84);
+  border-color: rgba(47, 114, 223, 0.25);
+}
+
+.user-portal--light .rs-btn--secondary:hover {
+  background: rgba(220, 233, 252, 0.95);
+  border-color: rgba(47, 114, 223, 0.4);
+}
+
+.user-portal--light .booking-zone strong,
+.user-portal--light .rs-dl-row dd,
+.user-portal--light .rs-dl-row--total dt,
+.user-portal--light .rs-dl-row--total dd {
+  color: #14345f;
+}
+
+.user-portal--light .booking-spot-badge,
+.user-portal--light .fp-zone-badge,
+.user-portal--light .plate-badge,
+.user-portal--light .support-hero-icon,
+.user-portal--light .contact-info-icon {
+  background: linear-gradient(135deg, rgba(47, 114, 223, 0.18), rgba(29, 182, 212, 0.1));
+  border-color: rgba(47, 114, 223, 0.38);
+  color: #2f72df;
+}
+
+.user-portal--light .support-tab,
+.user-portal--light .plate-card,
+.user-portal--light .contact-info-card {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(47, 114, 223, 0.22);
+  color: #1e3a5f;
+}
+
+.user-portal--light .support-tab:hover,
+.user-portal--light .plate-edit-btn:hover,
+.user-portal--light .contact-reset-btn:hover {
+  background: rgba(47, 114, 223, 0.13);
+  border-color: rgba(47, 114, 223, 0.4);
+}
+
+.user-portal--light .support-tab.active {
+  background: linear-gradient(135deg, rgba(47, 114, 223, 0.18), rgba(37, 99, 235, 0.1));
+  border-color: rgba(47, 114, 223, 0.45);
+  color: #2f72df;
+}
+
+.user-portal--light .notification-card.peak-alert,
+.user-portal--light .support-still-help {
+  background: linear-gradient(135deg, rgba(128, 90, 213, 0.13), rgba(109, 40, 217, 0.08));
+  border-color: rgba(128, 90, 213, 0.25);
+}
+
+.user-portal--light .notif-icon-wrap {
+  background: rgba(128, 90, 213, 0.16);
+  border-color: rgba(128, 90, 213, 0.28);
+}
+
+.user-portal--light .notif-title,
+.user-portal--light .support-still-help-btn {
+  color: #7c3aed;
+}
+
+.user-portal--light .support-still-help-btn {
+  background: rgba(124, 58, 237, 0.12);
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+.user-portal--light .support-still-help-btn:hover {
+  background: rgba(124, 58, 237, 0.18);
+  border-color: rgba(124, 58, 237, 0.44);
+}
+
+.user-portal--light .subscribtion-compare-table {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(47, 114, 223, 0.24);
+}
+
+.user-portal--light .subscribtion-compare-table thead th {
+  background: rgba(228, 239, 255, 0.92);
+  border-bottom-color: rgba(47, 114, 223, 0.24);
+}
+
+.user-portal--light .subscribtion-compare-table tbody th,
+.user-portal--light .subscribtion-compare-table tbody td {
+  border-bottom-color: rgba(47, 114, 223, 0.14);
+}
+
+.user-portal--light .subscribtion-compare-table tbody th.subscribtion-compare-feature {
+  background: rgba(230, 241, 255, 0.72);
+}
+
+.user-portal--light .contact-select option,
+.user-portal--light .modal-select option {
+  background: #f5faff;
+  color: #1d3352;
+}
+
+/* Cross-component light overrides (MyBookings / Filter / Subscribtion / FAQ) */
+.user-portal--light .quick-action-card {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(47, 114, 223, 0.22);
+}
+
+.user-portal--light .quick-action-card:hover {
+  background: rgba(47, 114, 223, 0.1);
+  border-color: rgba(47, 114, 223, 0.4);
+}
+
+.user-portal--light .quick-action-card.accent {
+  background: linear-gradient(135deg, rgba(47, 114, 223, 0.14), rgba(37, 99, 235, 0.08));
+  border-color: rgba(47, 114, 223, 0.38);
+}
+
+.user-portal--light .quick-action-title {
+  color: #163a66;
+}
+
+.user-portal--light .quick-action-sub,
+.user-portal--light .quick-action-arrow {
+  color: #58779f;
+}
+
+.user-portal--light .filter-pill {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(47, 114, 223, 0.26);
+  color: #4a6a94;
+}
+
+.user-portal--light .filter-pill:hover {
+  border-color: rgba(47, 114, 223, 0.46);
+  color: #2f72df;
+}
+
+.user-portal--light .filter-pill.active {
+  background: linear-gradient(135deg, rgba(47, 114, 223, 0.22), rgba(37, 99, 235, 0.14));
+  border-color: rgba(47, 114, 223, 0.52);
+  color: #133a68;
+}
+
+.user-portal--light .faq-question {
+  color: #163a66;
+}
+
+.user-portal--light .faq-question:hover,
+.user-portal--light .faq-item.open .faq-question {
+  color: #2f72df;
+}
+
+.user-portal--light .faq-answer {
+  color: #45678f;
+}
+
+.user-portal--light .faq-chevron {
+  color: #5d79a2;
+}
+
+.user-portal--light .faq-chevron.open {
+  color: #2f72df;
+}
+
+.user-portal--light .pricing-card {
+  border-color: rgba(47, 114, 223, 0.22);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 8px 24px rgba(70, 119, 196, 0.1);
+}
+
+.user-portal--light .pricing-card:hover {
+  box-shadow: 0 12px 30px rgba(70, 119, 196, 0.16);
+}
+
+.user-portal--light .pricing-card--standard {
+  border-color: rgba(100, 116, 139, 0.32);
+  background: linear-gradient(165deg, rgba(148, 163, 184, 0.18) 0%, rgba(255, 255, 255, 0.8) 60%);
+}
+
+.user-portal--light .pricing-card--premium {
+  border-color: rgba(124, 58, 237, 0.34);
+  background: linear-gradient(165deg, rgba(124, 58, 237, 0.14) 0%, rgba(255, 255, 255, 0.82) 60%);
+}
+
+.user-portal--light .pricing-card--gold {
+  border-color: rgba(202, 138, 4, 0.34);
+  background: linear-gradient(165deg, rgba(202, 138, 4, 0.15) 0%, rgba(255, 255, 255, 0.82) 60%);
+}
+
+.user-portal--light .pricing-price {
+  color: #12335d;
+}
+
+.user-portal--light .pricing-price-note,
+.user-portal--light .pricing-includes {
+  color: #56779f;
+}
+
+.user-portal--light .pricing-includes {
+  border-bottom-color: rgba(47, 114, 223, 0.18);
+}
+
+.user-portal--light .pricing-features li {
+  color: #1f3f68;
+}

@@ -4,7 +4,16 @@ import { useAuth } from './AuthContext.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import './DashboardLayout.css';
 
-export default function DashboardLayout({ navItems, title, subtitle, avatarLetter, badgeText, layoutClassName, children }) {
+export default function DashboardLayout({
+  navItems,
+  title,
+  subtitle,
+  avatarLetter,
+  badgeText,
+  layoutClassName,
+  topbarActions,
+  children,
+}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -105,6 +114,7 @@ export default function DashboardLayout({ navItems, title, subtitle, avatarLette
           </button>
           <h1 className="topbar-title">{activeLabel}</h1>
           <div className="topbar-right">
+            {topbarActions}
             <div className="topbar-badge">{badgeText}</div>
             <div className="topbar-avatar" aria-hidden="true">{avatarLetter}</div>
           </div>

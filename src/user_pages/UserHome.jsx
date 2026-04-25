@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazy, useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardLayout from '../DashboardLayout.jsx';
 import './UserPortalTheme.css';
@@ -9,6 +9,7 @@ const ReserveSpot = lazy(() => import('./ReserveSpot.jsx'));
 const MyProfile = lazy(() => import('./MyProfile.jsx'));
 const Subscribtion = lazy(() => import('./subscribtion.jsx'));
 const Support = lazy(() => import('./Support.jsx'));
+const THEME_STORAGE_KEY = 'parkit-user-theme';
 
 const userNavItems = [
   {
@@ -64,6 +65,28 @@ const userNavItems = [
 ];
 
 export default function UserHome() {
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    document.body.classList.toggle('user-portal-body-light', theme === 'light');
+
+    return () => {
+      document.body.classList.remove('user-portal-body-light');
+    };
+  }, [theme]);
+
+  const switchThemeLabel = theme === 'dark'
+    ? 'Switch to light mode'
+    : 'Switch to dark mode';
+
   return (
     <DashboardLayout
       navItems={userNavItems}
@@ -71,7 +94,27 @@ export default function UserHome() {
       subtitle="User Portal"
       avatarLetter="U"
       badgeText="Online"
-      layoutClassName="user-portal"
+      layoutClassName={`user-portal${theme === 'light' ? ' user-portal--light' : ''}`}
+      topbarActions={(
+        <button
+          type="button"
+          className="theme-toggle-btn"
+          aria-label={switchThemeLabel}
+          title={switchThemeLabel}
+          onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+        >
+          {theme === 'dark' ? (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20.8 15.3A9 9 0 1 1 8.7 3.2a7.2 7.2 0 0 0 12.1 12.1z" />
+            </svg>
+          )}
+        </button>
+      )}
     >
       <Routes>
         <Route path="my-bookings" element={<MyBookings />} />
