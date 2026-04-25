@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './FindParking.css';
 import SectionTitle from '../components/SectionTitle';
 import GlassCard from '../components/GlassCard';
@@ -138,11 +139,18 @@ export default function FindParking() {
 
             <div className="fp-slots-label">Available slots</div>
             <div className="fp-slots-grid">
-              {AVAILABLE_SLOTS.map((slot) => (
-                <div key={slot} className="fp-slot">
-                  {zone.label.split(' ')[1]}{slot}
-                </div>
-              ))}
+              {AVAILABLE_SLOTS.map((slot) => {
+                const spotId = `${zone.label.split(' ')[1]}${slot}`;
+                return (
+                  <Link
+                    key={slot}
+                    className="fp-slot"
+                    to={`/user/find-parking/reservespot/${encodeURIComponent(spotId)}`}
+                  >
+                    {spotId}
+                  </Link>
+                );
+              })}
             </div>
           </GlassCard>
         ))}

@@ -225,13 +225,24 @@
   background: rgba(74, 222, 128, 0.12);
   border: 1px solid rgba(74, 222, 128, 0.4);
   color: #4ade80;
+  text-decoration: none;
   transition: background 0.2s, transform 0.15s;
   cursor: pointer;
 }
 
-.fp-slot:hover {
+a.fp-slot:hover {
   background: rgba(74, 222, 128, 0.22);
   transform: translateY(-2px);
+}
+
+a.fp-slot:focus-visible {
+  outline: 2px solid rgba(59, 125, 232, 0.85);
+  outline-offset: 2px;
+}
+
+/* Trang reserve: cùng padding với Find Parking (nội dung trong ReserveSpot.css) */
+.fp-reserve-spot {
+  max-width: 900px;
 }
 
 /* ══════════════════════════════════

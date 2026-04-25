@@ -1,0 +1,226 @@
+/* ParkIT — ReserveSpot page */
+
+.rs-form-card,
+.rs-confirm-card {
+  padding: 28px;
+  max-width: 640px;
+}
+
+.rs-plate-mode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.rs-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rs-radio input {
+  accent-color: #3b7de8;
+  width: 16px;
+  height: 16px;
+}
+
+.rs-full {
+  width: 100%;
+  min-width: 0;
+}
+
+.rs-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 560px) {
+  .rs-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rs-datetime-block {
+  margin-bottom: 4px;
+}
+
+.rs-date-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.rs-date-input {
+  width: 100%;
+  max-width: 200px;
+}
+
+.rs-section {
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.rs-section--spaced {
+  margin-top: 16px;
+}
+
+.rs-form-error {
+  color: #f87171;
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+}
+
+.rs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 28px;
+  padding-top: 8px;
+}
+
+.rs-btn {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 10px 26px;
+  border-radius: 12px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.rs-btn--primary {
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #3b7de8, #2563eb);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.rs-btn--primary:hover {
+  opacity: 0.95;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+}
+
+.rs-btn--secondary {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.5);
+  color: #e2e8f0;
+}
+
+.rs-btn--secondary:hover {
+  border-color: rgba(59, 125, 232, 0.45);
+  background: rgba(30, 41, 59, 0.65);
+}
+
+.rs-confirm-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 20px;
+  letter-spacing: -0.02em;
+}
+
+.rs-dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rs-dl-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.rs-dl-row dt {
+  margin: 0;
+  font-weight: 600;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.rs-dl-row dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 500;
+  color: #f1f5f9;
+}
+
+.rs-dl-row--strong dd,
+.rs-dl-row--strong dt {
+  color: #e2e8f0;
+}
+
+.rs-dl-row--total {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(59, 125, 232, 0.2);
+  font-size: 1.05rem;
+}
+
+.rs-dl-row--total dt,
+.rs-dl-row--total dd {
+  font-weight: 800;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.rs-rate-hint {
+  margin: 12px 0 20px;
+  font-size: 0.78rem;
+  color: #7a8aaa;
+}
+
+.rs-confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.rs-btn--pay {
+  width: 100%;
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+  padding: 14px 24px;
+}
+
+.rs-btn--pay:hover {
+  opacity: 0.95;
+  transform: translateY(-2px);
+}
+
+.rs-btn--danger {
+  width: 100%;
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  color: #fecaca;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.45), rgba(185, 28, 28, 0.35));
+  box-shadow: 0 2px 10px rgba(127, 29, 29, 0.35);
+  padding: 12px 24px;
+}
+
+.rs-btn--danger:hover {
+  opacity: 0.95;
+  border-color: rgba(248, 113, 113, 0.7);
+  transform: translateY(-1px);
+}
+
+.rs-btn:active {
+  transform: translateY(0);
+}

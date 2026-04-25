@@ -10,7 +10,14 @@ export default function DashboardLayout({ navItems, title, subtitle, avatarLette
   const navigate = useNavigate();
   const location = useLocation();
 
-  const activeLabel = navItems.find((item) => item.path === location.pathname)?.label || navItems[0]?.label;
+  const pathMatches = (pathname, itemPath) =>
+    pathname === itemPath || (itemPath && pathname.startsWith(`${itemPath}/`));
+
+  const activeNav = [...navItems]
+    .sort((a, b) => (b.path?.length || 0) - (a.path?.length || 0))
+    .find((item) => pathMatches(location.pathname, item.path));
+
+  const activeLabel = activeNav?.label || navItems[0]?.label;
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -42,7 +49,7 @@ export default function DashboardLayout({ navItems, title, subtitle, avatarLette
         <nav className="sidebar-nav" aria-label="Main navigation">
           <span className="nav-section-label">Menu</span>
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = pathMatches(location.pathname, item.path);
             return (
               <button
                 key={item.label}

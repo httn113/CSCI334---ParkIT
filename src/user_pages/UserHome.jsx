@@ -4,6 +4,7 @@ import DashboardLayout from '../DashboardLayout.jsx';
 
 const MyBookings = lazy(() => import('./MyBookings.jsx'));
 const FindParking = lazy(() => import('./FindParking.jsx'));
+const ReserveSpot = lazy(() => import('./ReserveSpot.jsx'));
 const MyProfile = lazy(() => import('./MyProfile.jsx'));
 const Subscribtion = lazy(() => import('./subscribtion.jsx'));
 const Support = lazy(() => import('./Support.jsx'));
@@ -73,6 +74,7 @@ export default function UserHome() {
       <Routes>
         <Route path="my-bookings" element={<MyBookings />} />
         <Route path="find-parking" element={<FindParking />} />
+        <Route path="find-parking/reservespot/:spotId" element={<ReserveSpot />} />
         <Route path="my-profile" element={<MyProfile />} />
         <Route path="subscribtion" element={<Subscribtion />} />
         <Route path="support" element={<Support />} />
