@@ -48,19 +48,65 @@ body {
   overflow: hidden;
 }
 
-/* ── Animated background orbs ── */
+/* ── Animated mesh background (matches user-portal style) ── */
+.login-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 30%, rgba(59, 125, 232, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 45% at 80% 70%, rgba(34, 211, 238, 0.14) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 60% at 50% 10%, rgba(96, 165, 250, 0.08) 0%, transparent 75%),
+    linear-gradient(
+      135deg,
+      #040d1f 0%,
+      #071330 25%,
+      #0a1a42 50%,
+      #071330 75%,
+      #040d1f 100%
+    );
+  background-size: 200% 200%, 200% 200%, 200% 200%, 400% 400%;
+  animation:
+    login-mesh-drift 20s ease-in-out infinite alternate,
+    login-gradient-shift 28s linear infinite;
+}
+
+@keyframes login-mesh-drift {
+  0% {
+    background-position: 0% 30%, 100% 70%, 50% 0%, 0% 50%;
+  }
+  33% {
+    background-position: 40% 10%, 60% 90%, 20% 60%, 50% 0%;
+  }
+  66% {
+    background-position: 80% 50%, 20% 30%, 90% 20%, 100% 50%;
+  }
+  100% {
+    background-position: 20% 80%, 80% 20%, 60% 80%, 0% 100%;
+  }
+}
+
+@keyframes login-gradient-shift {
+  0%   { background-position: 0% 50%,   0% 100%, 100%  0%,  0%   0%; }
+  50%  { background-position: 100% 50%, 100% 0%,  0% 100%, 100% 100%; }
+  100% { background-position: 0% 50%,   0% 100%, 100%  0%,  0%   0%; }
+}
+
+/* ── Animated background orbs (layer above mesh pseudo-element) ── */
 .login-bg {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 }
 
 .orb {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.18;
+  opacity: 0.12;
 }
 
 .orb-1 {
@@ -118,7 +164,7 @@ body {
 /* ── Card ── */
 .login-card {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   max-width: 420px;
   margin: 24px;
@@ -181,10 +227,41 @@ body {
   font-size: 1.5rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  background: linear-gradient(90deg, var(--white), var(--accent-lt));
+  background-image: linear-gradient(
+    90deg,
+    #ffffff   0%,
+    #a5c8ff  10%,
+    #5f9eff  22%,
+    #22d3ee  36%,
+    #67e8f9  48%,
+    #e8eef7  60%,
+    #ffffff  72%,
+    #5f9eff  84%,
+    #22d3ee  92%,
+    #ffffff 100%
+  );
+  background-size: 250% auto;
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: transparent;
+  animation: login-brand-rgb-sweep 4s linear infinite;
+}
+
+@keyframes login-brand-rgb-sweep {
+  0%   { background-position: 0%   center; }
+  100% { background-position: 250% center; }
+}
+
+/* ── Brand icon: glow pulse matching the sweep cadence ── */
+.login-brand-icon {
+  animation: login-brand-icon-glow 4s ease-in-out infinite;
+}
+
+@keyframes login-brand-icon-glow {
+  0%, 100% { box-shadow: 0 4px 20px rgba(59, 125, 232, 0.4); }
+  33%       { box-shadow: 0 4px 22px rgba(34, 211, 238, 0.55), 0 0 14px rgba(34, 211, 238, 0.3); }
+  66%       { box-shadow: 0 4px 22px rgba(96, 165, 250, 0.55), 0 0 14px rgba(96, 165, 250, 0.3); }
 }
 
 .login-brand-sub {
@@ -326,7 +403,7 @@ body {
   }
 }
 
-/* ── Submit button ── */
+/* ── Submit button (base — used for Register in register view) ── */
 .login-btn {
   margin-top: 4px;
   padding: 13px;
@@ -345,27 +422,64 @@ body {
   transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
 }
 
+/* Shine sweep on hover for all .login-btn */
 .login-btn::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.08);
+  top: 0;
+  left: -70%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 100%
+  );
   opacity: 0;
-  transition: opacity var(--transition);
-}
-
-.login-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 28px var(--accent-glow);
-  filter: brightness(1.08);
+  transition: opacity 0.18s ease;
+  pointer-events: none;
 }
 
 .login-btn:hover::after {
   opacity: 1;
+  animation: login-btn-shine 0.55s ease forwards;
+}
+
+@keyframes login-btn-shine {
+  0%   { left: -70%; }
+  100% { left: 130%; }
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--accent-glow);
+  filter: brightness(1.08);
 }
 
 .login-btn:active {
   transform: translateY(0);
+}
+
+/* ── Sign In variant: green + idle glow pulse ── */
+.login-btn--signin {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+  animation: signin-btn-pulse 3s ease-in-out infinite;
+}
+
+.login-btn--signin:hover {
+  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.6);
+}
+
+@keyframes signin-btn-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4); }
+  50%       { box-shadow: 0 4px 28px rgba(34, 197, 94, 0.65), 0 0 0 4px rgba(34, 197, 94, 0.1); }
+}
+
+.login-btn--signin:hover,
+.login-btn--signin:focus-visible {
+  animation: none;
 }
 
 /* ── Footer hint ── */
@@ -384,13 +498,36 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Freeze ambient background + brand animations; keep UI feedback (shake, slide-in) */
+  .login-page::before {
+    animation: none;
+    background-position: center center;
+  }
 
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .orb-1, .orb-2, .orb-3 {
+    animation: none;
+  }
+
+  .login-brand-name {
+    animation: none;
+    background-position: 0% center;
+  }
+
+  .login-brand-icon {
+    animation: none;
+  }
+
+  .login-btn--signin {
+    animation: none;
+  }
+
+  .register-btn {
+    animation: none;
+  }
+
+  .register-toggle span {
+    animation: none;
+    -webkit-text-fill-color: var(--accent-lt);
   }
 }
 
@@ -413,25 +550,59 @@ body {
 .register-btn {
   margin-top: 8px;
   padding: 12px;
-  background: rgba(59, 125, 232, 0.1);
-  border: 1px solid rgba(59, 125, 232, 0.3);
+  background: rgba(59, 125, 232, 0.08);
+  border: 1px solid rgba(59, 125, 232, 0.28);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+  transition: background var(--transition), border-color var(--transition),
+              box-shadow var(--transition), transform var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: register-btn-border-glow 3.5s ease-in-out infinite;
+}
+
+@keyframes register-btn-border-glow {
+  0%, 100% { border-color: rgba(59, 125, 232, 0.28); box-shadow: none; }
+  50%       { border-color: rgba(95, 158, 255, 0.55); box-shadow: 0 0 12px rgba(59, 125, 232, 0.2); }
+}
+
+/* Shine sweep */
+.register-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -70%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(95, 158, 255, 0.18) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
 }
 
 .register-btn:hover {
-  background: rgba(59, 125, 232, 0.2);
+  background: rgba(59, 125, 232, 0.18);
   border-color: var(--accent);
-  box-shadow: 0 4px 15px var(--accent-glow);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 22px var(--accent-glow);
+  transform: translateY(-2px);
+  animation: none;
+}
+
+.register-btn:hover::after {
+  opacity: 1;
+  animation: login-btn-shine 0.55s ease forwards;
 }
 
 .register-toggle {
@@ -450,6 +621,20 @@ body {
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
+  background-image: linear-gradient(
+    90deg,
+    #ffffff   0%,
+    #a5c8ff  20%,
+    #22d3ee  50%,
+    #5f9eff  80%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: login-brand-rgb-sweep 3s linear infinite;
 }
 
 .register-toggle:hover {
@@ -457,7 +642,7 @@ body {
 }
 
 .register-toggle:hover span {
-  color: var(--white);
+  animation-duration: 1.5s;
 }
 
 /* Password Validation UI */
