@@ -4,6 +4,10 @@ import './FindParking.css';
 import SectionTitle from '../components/SectionTitle';
 import GlassCard from '../components/GlassCard';
 import FilterPillGroup from '../components/FilterPillGroup';
+import dayjs from "dayjs";
+
+const ENDPOINT = import.meta.env.VITE_API_URL;
+
 
 const ZONES = [
   { id: 'a', label: 'Zone A' },
@@ -43,9 +47,74 @@ export default function FindParking() {
   const [selectedMinute, setSelectedMinute] = useState('00');
   const [selectedDurationMinutes, setSelectedDurationMinutes] = useState('60');
 
+  const [slots, setSlots] = useState([]);
+  
   const visibleZones =
     selectedZone === 'all' ? ZONES : ZONES.filter((z) => z.id === selectedZone);
 
+  async function handleFindParking(){
+    try {
+      // const token = localStorage.getItem("access_token");
+      // console.log(token)
+
+      console.log(selectedDate); // 2026-04-29
+      console.log(selectedHour); // 08
+      console.log(selectedMinute); // 00
+      console.log(selectedDurationMinutes); // 60
+
+      const timeStart = dayjs(`${selectedDate} ${selectedHour}:${selectedMinute}`)
+        .format("YYYY-MM-DD HH:mm:ss");
+
+      const timeEnd = dayjs(timeStart)
+        .add(selectedDurationMinutes, "minute")
+        .format("YYYY-MM-DD HH:mm:ss");
+
+      console.log(timeStart, timeEnd);  
+       
+      const res = await fetch(`${ENDPOINT}/auth/test/searchParking`, {
+        method: "POST",
+        headers: {
+          // "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "timeStart": timeStart,
+          "timeEnd": timeEnd
+        })
+      });
+
+      const data = await res.json();
+      setSlots(data);
+
+      localStorage.setItem('parking_search', JSON.stringify({
+        date: selectedDate,
+        hour: selectedHour,
+        minute: selectedMinute,
+        durationMinutes: Number(selectedDurationMinutes),
+        // slotId: slot.slotId,
+      }));
+
+      // const slotByZone = {};
+      // for (const slot of slots){
+      //   const zone = slot.zoneName;
+      //   if (!slotByZone[zone]){
+      //     slotByZone[zone] = [];
+      //   }
+      //   slotByZone[zone].push(slot);
+      // }
+
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Failed to fetch data:", err);
+        return;
+      }
+   }
+    catch (err) {
+      console.error("Failed to fetch data:", err);
+    }
+ }
+  
+  
   return (
     <div className="fp-page">
       <h1 className="fp-heading">Find Parking</h1>
@@ -108,7 +177,7 @@ export default function FindParking() {
             </select>
           </div>
 
-          <button className="fp-find-btn" type="button">
+          <button className="fp-find-btn" type="button" onClick={handleFindParking}>
             Find
           </button>
         </GlassCard>
@@ -131,7 +200,9 @@ export default function FindParking() {
               <div className="fp-zone-badge">{zone.label.split(' ')[1]}</div>
               <div className="fp-zone-meta">
                 <span className="fp-zone-name">{zone.label}</span>
-                <span className="fp-zone-sub">30 slots total</span>
+                <span className="fp-zone-sub">
+                  {slots.filter((s) => s.zoneName === zone.label.split(' ')[1]).length} slots total
+                </span>
               </div>
             </div>
 
@@ -139,13 +210,24 @@ export default function FindParking() {
 
             <div className="fp-slots-label">Available slots</div>
             <div className="fp-slots-grid">
-              {AVAILABLE_SLOTS.map((slot) => {
-                const spotId = `${zone.label.split(' ')[1]}${slot}`;
+              {/* {(slotsByZone[zone.label.split(' ')[1]] || []).map((slot) => { */}
+              {slots
+                .filter((s) => s.zoneName === zone.label.split(' ')[1])
+                .map((slot) => {  
+                const spotId = `${slot.zoneName}${String(slot.zoneNumber).padStart(3, '0')}`;
                 return (
                   <Link
-                    key={slot}
+                    key={slot.slotId}
                     className="fp-slot"
                     to={`/user/find-parking/reservespot/${encodeURIComponent(spotId)}`}
+                    onClick={() => {
+                      const raw = localStorage.getItem('parking_search');
+                      const existing = raw ? JSON.parse(raw) : {};
+                      localStorage.setItem('parking_search', JSON.stringify({
+                        ...existing,
+                        slotId: slot.slotId,   // ✅ inject slotId at click time
+                      }));
+                    }}
                   >
                     {spotId}
                   </Link>

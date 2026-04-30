@@ -5,17 +5,7 @@ import GlassCard from '../components/GlassCard';
 import StatCard from '../components/StatCard';
 import QuickActionCard from '../components/QuickActionCard';
 
-// TODO: Replace mock data with real user/booking data from backend
-const MOCK_USER = 'User';
-
-const MOCK_BOOKING = {
-  spot: 'A1',
-  zone: 'A',
-  endTime: new Date(Date.now() + 90 * 60_000).toISOString(),
-  licensePlate: 'ABC-1234',
-  brand: 'Mercedes C200',
-  status: 'Ready To Park',
-};
+const ENDPOINT = import.meta.env.VITE_API_URL;
 
 const MapIcon = (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -33,10 +23,129 @@ const BookIcon = (
   </svg>
 );
 
-export default function MyBookings() {
-  const { spot, zone, endTime, licensePlate, brand, status } = MOCK_BOOKING;
+function formatTime(date) {
+  if (!date) return '—';
+  return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
 
+function formatDate(date) {
+  if (!date) return '—';
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function BookingCard({ booking, now }) {
+  const licensePlate = booking.licensePlate ?? '—';
+  const brand = booking.brand ?? '—';
+  const model = booking.model ?? '—';
+  const zoneName = booking.zoneName ?? '—';
+  const zoneNumber = booking.zoneNumber ?? '—';
+  const spotLabel =
+    zoneName !== '—' && zoneNumber !== '—'
+      ? `${zoneName}${String(zoneNumber).padStart(3, '0')}`
+      : '—';
+
+  const startTime = booking.timeStart ? new Date(booking.timeStart) : null;
+  const endTime = booking.timeEnd ? new Date(booking.timeEnd) : null;
+
+  // Status logic:
+  // - "Upcoming"  : now < startTime
+  // - "Active"    : startTime <= now < endTime
+  const isActive = startTime && endTime && now >= startTime && now < endTime;
+  const isUpcoming = startTime && now < startTime;
+
+  // For Upcoming: show countdown to start; for Active: show countdown to end
+  const countdownTarget = isActive ? endTime : isUpcoming ? startTime : null;
+  const diffMs = countdownTarget ? Math.max(0, countdownTarget - now) : 0;
+  const countdown = {
+    hours: Math.floor(diffMs / 3_600_000),
+    minutes: Math.floor((diffMs % 3_600_000) / 60_000),
+  };
+
+  const statusLabel = isActive ? 'Active' : isUpcoming ? 'Upcoming' : '—';
+  const statusClass = isActive ? 'status-ready' : 'status-upcoming';
+  const countdownLabel = isActive ? 'Time Remaining' : 'Starts In';
+
+  // Show date only when start/end are on different dates or not today
+  const today = now.toDateString();
+  const startDateStr = startTime ? (startTime.toDateString() === today ? '' : formatDate(startTime)) : '—';
+  const endDateStr = endTime ? (endTime.toDateString() === today ? '' : formatDate(endTime)) : '—';
+
+  const startDisplay = startTime
+    ? startDateStr ? `${startDateStr}, ${formatTime(startTime)}` : formatTime(startTime)
+    : '—';
+  const endDisplay = endTime
+    ? endDateStr ? `${endDateStr}, ${formatTime(endTime)}` : formatTime(endTime)
+    : '—';
+
+  return (
+    <GlassCard className="booking-card">
+      <div className="booking-header">
+        <div className="booking-spot-badge">{spotLabel}</div>
+        <div className="booking-spot-meta">
+          <span className="booking-spot-label">Your Assigned Spot</span>
+          <span className="booking-zone">Zone&nbsp;<strong>{zoneName}</strong></span>
+        </div>
+        <span className={`booking-status-pill ${statusClass}`}>{statusLabel}</span>
+      </div>
+
+      <div className="booking-divider" />
+
+      <div className="booking-details">
+        <div className="booking-detail-item">
+          <span className="booking-detail-label">{countdownLabel}</span>
+          <span className="booking-detail-value timer">
+            {countdown.hours}H&nbsp;{String(countdown.minutes).padStart(2, '0')}M
+          </span>
+        </div>
+        <div className="booking-detail-item">
+          <span className="booking-detail-label">Start Time</span>
+          <span className="booking-detail-value">{startDisplay}</span>
+        </div>
+        <div className="booking-detail-item">
+          <span className="booking-detail-label">End Time</span>
+          <span className="booking-detail-value">{endDisplay}</span>
+        </div>
+        <div className="booking-detail-item">
+          <span className="booking-detail-label">License Plate</span>
+          <span className="booking-detail-value plate">{licensePlate}</span>
+        </div>
+        <div className="booking-detail-item">
+          <span className="booking-detail-label">Vehicle</span>
+          <span className="booking-detail-value">{brand} {model}</span>
+        </div>
+      </div>
+    </GlassCard>
+  );
+}
+
+export default function MyBookings() {
   const [now, setNow] = useState(new Date());
+  const [user, setUser] = useState('');
+  const [activeBookings, setActiveBookings] = useState([]);
+
+  // Fetch active bookings
+  useEffect(() => {
+    async function fetchActiveBookings() {
+      try {
+        const res = await fetch(`${ENDPOINT}/protected/myBooking/showBooking`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setUser(data.userName);
+        // Include both upcoming and currently active bookings (anything that hasn't ended)
+        const active = data.bookings.filter(b => new Date(b.timeEnd) > new Date());
+        setActiveBookings(active);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchActiveBookings();
+  }, []);
+
+  // Clock ticker
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
@@ -46,62 +155,34 @@ export default function MyBookings() {
   const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
   const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-  const diffMs = Math.max(0, new Date(endTime) - now);
-  const timeRemaining = {
-    hours: Math.floor(diffMs / 3_600_000),
-    minutes: Math.floor((diffMs % 3_600_000) / 60_000),
-  };
+  const hasActiveBookings = activeBookings.length > 0;
 
   return (
     <div className="bookings-page">
 
       {/* ── Welcome heading ── */}
       <h2 className="bookings-welcome">
-        Welcome Back, <span className="bookings-username">{MOCK_USER}</span>
+        Welcome Back, <span className="bookings-username">{user || 'User'}</span>
       </h2>
       <p className="bookings-datetime">{dayName}, {dateStr} · {timeStr}</p>
 
-      {/* ── Active booking card ── */}
-      <SectionTitle>Active Booking</SectionTitle>
-      <GlassCard className="booking-card">
+      {/* ── Active bookings ── */}
+      <SectionTitle>
+        Active Bookings
+        {hasActiveBookings && (
+          <span className="booking-count-badge">{activeBookings.length}</span>
+        )}
+      </SectionTitle>
 
-        {/* Spot + Zone */}
-        <div className="booking-header">
-          <div className="booking-spot-badge">{spot}</div>
-          <div className="booking-spot-meta">
-            {/* TODO: Replace with real spot name from backend */}
-            <span className="booking-spot-label">Your Assigned Spot</span>
-            <span className="booking-zone">Zone&nbsp;<strong>{zone}</strong></span>
-          </div>
-          <span className={`booking-status-pill ${status === 'Ready To Park' ? 'status-ready' : ''}`}>
-            {status}
-          </span>
-        </div>
-
-        <div className="booking-divider" />
-
-        {/* Details grid */}
-        <div className="booking-details">
-
-          <div className="booking-detail-item">
-            <span className="booking-detail-label">Time Remaining</span>
-            <span className="booking-detail-value timer">
-              {timeRemaining.hours}H&nbsp;{String(timeRemaining.minutes).padStart(2, '0')}M
-            </span>
-          </div>
-
-          <div className="booking-detail-item">
-            <span className="booking-detail-label">License Plate</span>
-            <span className="booking-detail-value plate">{licensePlate}</span>
-          </div>
-
-          <div className="booking-detail-item">
-            <span className="booking-detail-label">Brand</span>
-            <span className="booking-detail-value">{brand}</span>
-          </div>
-
-        </div>
-      </GlassCard>
+      {hasActiveBookings ? (
+        activeBookings.map(booking => (
+          <BookingCard key={booking.bookingId} booking={booking} now={now} />
+        ))
+      ) : (
+        <GlassCard className="booking-card">
+          <p style={{ textAlign: 'center', opacity: 0.6, padding: '1rem 0' }}>No active bookings.</p>
+        </GlassCard>
+      )}
 
       {/* ── Spot info cards ── */}
       <SectionTitle style={{ marginTop: 28 }}>Parking Overview</SectionTitle>

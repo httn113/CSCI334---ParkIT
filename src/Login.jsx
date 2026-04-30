@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import './Login.css';
 
+const ENDPOINT = import.meta.env.VITE_API_URL;
+
 function validatePassword(pw) {
   const errors = [];
   if (pw.length < 6)                   errors.push('At least 6 characters');
@@ -25,14 +27,17 @@ export default function Login() {
   const [mode, setMode] = useState('login');
 
   // ── Register state ──
-  const [firstName, setFirstName]           = useState('');
-  const [lastName, setLastName]             = useState('');
-  const [regEmail, setRegEmail]             = useState('');
-  const [regPassword, setRegPassword]       = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [regError, setRegError]             = useState('');
-  const [regLoading, setRegLoading]         = useState('');
-  const [regSuccess, setRegSuccess]         = useState('');
+  const [regError, setRegError] = useState('');
+  const [regLoading, setRegLoading] = useState('');
+  const [regSuccess, setRegSuccess] = useState('');
+  const [phone, setPhone] = useState('');
+  const [licenseNo, setLicenseNo] = useState('');
+
 
   const timerRef = useRef(null);
   useEffect(() => () => clearTimeout(timerRef.current), []);
@@ -48,7 +53,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:5000/auth/signin', {
+      const res = await fetch(`${ENDPOINT}/auth/signin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail, password }),
@@ -72,6 +77,7 @@ export default function Login() {
     e.preventDefault();
     setRegError('');
     setRegSuccess('');
+    console.log(1)
 
     if (!firstName.trim() || !lastName.trim()) {
       setRegError('First name and last name are required.');
@@ -89,8 +95,37 @@ export default function Login() {
       return;
     }
 
+    console.log(ENDPOINT);
+    console.log({ firstName, lastName, regEmail, regPassword, confirmPassword, phone, licenseNo })
+
     setRegLoading(true);
 
+    try {
+      const res = await fetch(`${ENDPOINT}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerFName: firstName.trim(),
+          customerLName: lastName.trim(),
+          email: regEmail.trim(),
+          password: regPassword,
+          phone: phone.trim(),
+          licenseNo: licenseNo.trim(),
+        }),
+      });
+    
+      if (!res.ok) {
+        const data = await res.json();
+        setRegError(data.Error ?? 'Registration failed.');
+      } else {
+        setRegSuccess('Account created! Please sign in.');
+        timerRef.current = setTimeout(() => switchToLogin(), 1500);
+      }
+    } catch {
+      setRegError('Could not reach the server. Please try again.');
+    } finally {
+      setRegLoading(false);
+    }
     // ─── TODO (Backend): Call POST /auth/signup here ──────────────────────────
     // Endpoint : POST http://127.0.0.1:5000/auth/signup
     // Headers  : { 'Content-Type': 'application/json' }
@@ -366,6 +401,50 @@ export default function Login() {
                     </li>
                   </ul>
                 )}
+              </div>
+
+              {/* Phone */}
+              <div className="form-group">
+                <label className="form-label" htmlFor="reg-phone">Phone Number</label>
+                <div className="input-wrapper">
+                  <span className="input-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12 19.79 19.79 0 0 1 1.08 3.18 2 2 0 0 1 3.06 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                  </span>
+                  <input
+                    id="reg-phone"
+                    type="tel"
+                    className="form-input"
+                    placeholder="e.g. 0412 345 678"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    autoComplete="tel"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* License No */}
+              <div className="form-group">
+                <label className="form-label" htmlFor="reg-licenseno">Driver's License Number</label>
+                <div className="input-wrapper">
+                  <span className="input-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="5" width="20" height="14" rx="2" />
+                      <path d="M2 10h20" />
+                    </svg>
+                  </span>
+                  <input
+                    id="reg-licenseno"
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. 12345678"
+                    value={licenseNo}
+                    onChange={(e) => setLicenseNo(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               {/* Error */}

@@ -1,24 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './FindParking.css';
 import './ReserveSpot.css';
 import GlassCard from '../components/GlassCard';
 import FormField from '../components/FormField';
 import SectionTitle from '../components/SectionTitle';
+import dayjs from 'dayjs';
+const ENDPOINT = import.meta.env.VITE_API_URL;
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
 const MINUTES = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
-
-const MOCK_SAVED_PLATES = [
-  { id: 1, plate: 'TEST-1234' },
-  { id: 2, plate: 'XY-90AB' },
-];
-
-const CAR_TYPES = [
-  'Sedan', 'SUV', 'Minivan', 'Hatchback', 'Coupe', 'Pickup Truck', 'Convertible', 'Wagon', 'Other',
-];
-
-const COLORS = ['Black', 'White', 'Silver', 'Red', 'Blue', 'Grey', 'Other'];
 
 const PRICE_PER_HOUR_USD = 8;
 
@@ -60,17 +51,22 @@ function formatDateTime(d) {
 
 export default function ReserveSpot() {
   const { spotId } = useParams();
+  const [slotId, setSlotId] = useState('')
   const navigate = useNavigate();
 
   const minDate = useMemo(() => ymd(0), []);
   const defaultFutureDate = useMemo(() => ymd(1), []);
 
+  const [savedPlates, setSavedPlates] = useState([]);
+  const [savedPlateId, setSavedPlateId] = useState('');
+  const [carTypes, setCarTypes] = useState([]);
+  const [colors, setColors] = useState([]);
+
   const [plateMode, setPlateMode] = useState('saved');
-  const [savedPlateId, setSavedPlateId] = useState(String(MOCK_SAVED_PLATES[0]?.id ?? ''));
   const [newPlate, setNewPlate] = useState('');
 
-  const [vehicleType, setVehicleType] = useState(CAR_TYPES[0]);
-  const [color, setColor] = useState(COLORS[0]);
+  const [vehicleType, setVehicleType] = useState('');
+  const [color, setColor] = useState('');
 
   const [startDate, setStartDate] = useState(defaultFutureDate);
   const [startHour, setStartHour] = useState('08');
@@ -83,6 +79,60 @@ export default function ReserveSpot() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmed, setConfirmed] = useState(null);
 
+  // Fetch saved plates and derive car types + colors from the response
+  useEffect(() => {
+    async function fetchPlates() {
+      try {
+        const res = await fetch(`${ENDPOINT}/protected/myProfile/showLicensePlate`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setSavedPlates(data);
+        setCarTypes([...new Set(data.map(p => p.type))]);
+        setColors([...new Set(data.map(p => p.color))]);
+        if (data.length > 0) {
+          setSavedPlateId(data[0].licensePlate);
+          setVehicleType(data[0].model);
+          setColor(data[0].color);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchPlates();
+  }, []);
+
+  // Sync vehicleType and color when the selected plate changes
+  useEffect(() => {
+    const selected = savedPlates.find(p => p.licensePlate === savedPlateId);
+    if (selected) {
+      setVehicleType(selected.model);
+      setColor(selected.color);
+    }
+  }, [savedPlateId, savedPlates]);
+
+  useEffect(() => {
+    const raw = localStorage.getItem('parking_search');
+    if (!raw) return;
+    const { date, hour, minute, durationMinutes, slotId } = JSON.parse(raw);
+
+    if (slotId) setSlotId(slotId);
+    if (date) setStartDate(date);
+    if (hour) setStartHour(hour);
+    if (minute) setStartMinute(minute);
+
+    // Calculate end time from start + duration
+    if (date && hour && minute && durationMinutes) {
+      const end = dayjs(`${date} ${hour}:${minute}`).add(durationMinutes, 'minute');
+      setEndDate(end.format('YYYY-MM-DD'));
+      setEndHour(end.format('HH'));
+      setEndMinute(end.format('mm'));
+    }
+  }, []);
+
   const startAt = useMemo(
     () => dateFromYmdHms(startDate, startHour, startMinute),
     [startDate, startHour, startMinute],
@@ -93,10 +143,7 @@ export default function ReserveSpot() {
   );
 
   function getResolvedPlate() {
-    if (plateMode === 'saved') {
-      const p = MOCK_SAVED_PLATES.find((x) => String(x.id) === savedPlateId);
-      return p?.plate?.trim() ?? '';
-    }
+    if (plateMode === 'saved') return savedPlateId.trim();
     return newPlate.trim();
   }
 
@@ -128,10 +175,10 @@ export default function ReserveSpot() {
 
   function handleConfirm() {
     if (!validate()) return;
-    const plate = getResolvedPlate();
     setConfirmed({
+      slotId,          
       spotId,
-      licensePlate: plate,
+      licensePlate: getResolvedPlate(),
       vehicleType,
       color,
       startAt: new Date(startAt.getTime()),
@@ -149,9 +196,42 @@ export default function ReserveSpot() {
     setConfirmed(null);
   }
 
-  const totalMs = confirmed
-    ? confirmed.endAt.getTime() - confirmed.startAt.getTime()
-    : 0;
+  async function handlePayment() {
+    try {
+      const timeStart = dayjs(confirmed.startAt).format("YYYY-MM-DD HH:mm:ss");
+      const timeEnd = dayjs(confirmed.endAt).format("YYYY-MM-DD HH:mm:ss");
+
+      const res = await fetch(`${ENDPOINT}/protected/findParking/booking`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          slotId,
+          licensePlate: confirmed.licensePlate,
+          vehicleType: confirmed.vehicleType,
+          color: confirmed.color,
+          timeStart,
+          timeEnd,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Reservation failed:", err);
+        return;
+      }
+
+      // Success — clear the search cache and redirect
+      localStorage.removeItem('parking_search');
+      navigate('/user/my-bookings');  // adjust to your actual route
+    } catch (err) {
+      console.error("Reservation failed:", err);
+    }
+  }
+
+  const totalMs = confirmed ? confirmed.endAt.getTime() - confirmed.startAt.getTime() : 0;
   const totalMinutes = Math.max(0, Math.floor(totalMs / 60_000));
   const totalTimeLabel = formatDurationFromMinutes(totalMinutes);
   const priceTotal = (totalMs / 3_600_000) * PRICE_PER_HOUR_USD;
@@ -172,7 +252,7 @@ export default function ReserveSpot() {
                   type="radio"
                   name="plateMode"
                   checked={plateMode === 'saved'}
-                  onChange={() => { setPlateMode('saved'); setFormErrors((e) => ({ ...e, plate: '' })); }}
+                  onChange={() => { setPlateMode('saved'); setFormErrors((prev) => ({ ...prev, plate: '' })); }}
                 />
                 Saved on account
               </label>
@@ -181,7 +261,7 @@ export default function ReserveSpot() {
                   type="radio"
                   name="plateMode"
                   checked={plateMode === 'new'}
-                  onChange={() => { setPlateMode('new'); setFormErrors((e) => ({ ...e, plate: '' })); }}
+                  onChange={() => { setPlateMode('new'); setFormErrors((prev) => ({ ...prev, plate: '' })); }}
                 />
                 Enter new
               </label>
@@ -193,8 +273,8 @@ export default function ReserveSpot() {
                 value={savedPlateId}
                 onChange={(e) => setSavedPlateId(e.target.value)}
               >
-                {MOCK_SAVED_PLATES.map((p) => (
-                  <option key={p.id} value={p.id}>{p.plate}</option>
+                {savedPlates.map((p) => (
+                  <option key={p.licensePlate} value={p.licensePlate}>{p.licensePlate}</option>
                 ))}
               </select>
             ) : (
@@ -203,7 +283,7 @@ export default function ReserveSpot() {
                 className="fp-input rs-full"
                 type="text"
                 value={newPlate}
-                onChange={(e) => { setNewPlate(e.target.value); setFormErrors((e2) => ({ ...e2, plate: '' })); }}
+                onChange={(e) => { setNewPlate(e.target.value); setFormErrors((prev) => ({ ...prev, plate: '' })); }}
                 placeholder="e.g. ABC-1234"
                 autoComplete="off"
               />
@@ -218,7 +298,7 @@ export default function ReserveSpot() {
                 value={vehicleType}
                 onChange={(e) => setVehicleType(e.target.value)}
               >
-                {CAR_TYPES.map((t) => (
+                {carTypes.map((t) => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
@@ -230,7 +310,7 @@ export default function ReserveSpot() {
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
               >
-                {COLORS.map((c) => (
+                {colors.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
@@ -249,7 +329,7 @@ export default function ReserveSpot() {
                   className="fp-input rs-date-input"
                   value={startDate}
                   min={minDate}
-                  onChange={(e) => { setStartDate(e.target.value); setFormErrors((e2) => ({ ...e2, start: '' })); }}
+                  onChange={(e) => { setStartDate(e.target.value); setFormErrors((prev) => ({ ...prev, start: '' })); }}
                 />
               </div>
               <div className="fp-field">
@@ -258,7 +338,7 @@ export default function ReserveSpot() {
                   <select
                     className="fp-select"
                     value={startHour}
-                    onChange={(e) => { setStartHour(e.target.value); setFormErrors((e2) => ({ ...e2, start: '' })); }}
+                    onChange={(e) => { setStartHour(e.target.value); setFormErrors((prev) => ({ ...prev, start: '' })); }}
                   >
                     {HOURS.map((h) => <option key={h} value={h}>{h}</option>)}
                   </select>
@@ -266,7 +346,7 @@ export default function ReserveSpot() {
                   <select
                     className="fp-select"
                     value={startMinute}
-                    onChange={(e) => { setStartMinute(e.target.value); setFormErrors((e2) => ({ ...e2, start: '' })); }}
+                    onChange={(e) => { setStartMinute(e.target.value); setFormErrors((prev) => ({ ...prev, start: '' })); }}
                   >
                     {MINUTES.map((m) => <option key={m} value={m}>{m}</option>)}
                   </select>
@@ -287,7 +367,7 @@ export default function ReserveSpot() {
                   className="fp-input rs-date-input"
                   value={endDate}
                   min={minDate}
-                  onChange={(e) => { setEndDate(e.target.value); setFormErrors((e2) => ({ ...e2, end: '' })); }}
+                  onChange={(e) => { setEndDate(e.target.value); setFormErrors((prev) => ({ ...prev, end: '' })); }}
                 />
               </div>
               <div className="fp-field">
@@ -296,7 +376,7 @@ export default function ReserveSpot() {
                   <select
                     className="fp-select"
                     value={endHour}
-                    onChange={(e) => { setEndHour(e.target.value); setFormErrors((e2) => ({ ...e2, end: '' })); }}
+                    onChange={(e) => { setEndHour(e.target.value); setFormErrors((prev) => ({ ...prev, end: '' })); }}
                   >
                     {HOURS.map((h) => <option key={h} value={h}>{h}</option>)}
                   </select>
@@ -304,7 +384,7 @@ export default function ReserveSpot() {
                   <select
                     className="fp-select"
                     value={endMinute}
-                    onChange={(e) => { setEndMinute(e.target.value); setFormErrors((e2) => ({ ...e2, end: '' })); }}
+                    onChange={(e) => { setEndMinute(e.target.value); setFormErrors((prev) => ({ ...prev, end: '' })); }}
                   >
                     {MINUTES.map((m) => <option key={m} value={m}>{m}</option>)}
                   </select>
@@ -347,7 +427,7 @@ export default function ReserveSpot() {
           </dl>
           <p className="rs-rate-hint">Rate: {formatMoney(PRICE_PER_HOUR_USD)} / hour (mock)</p>
           <div className="rs-confirm-actions">
-            <button type="button" className="rs-btn rs-btn--pay" onClick={() => { /* payment flow TBD */ }}>
+            <button type="button" className="rs-btn rs-btn--pay" onClick={handlePayment}>
               Accept and Pay
             </button>
             <button type="button" className="rs-btn rs-btn--danger" onClick={handleBackToForm}>
