@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './MyBookings.css';
 import SectionTitle from '../components/SectionTitle';
 import GlassCard from '../components/GlassCard';
 import StatCard from '../components/StatCard';
 import QuickActionCard from '../components/QuickActionCard';
+import Modal from '../components/Modal.jsx';
+import ParkingLotMap, { bookingSpotKeys } from './ParkingLotMap.jsx';
 
 const ENDPOINT = import.meta.env.VITE_API_URL;
 
@@ -119,9 +122,13 @@ function BookingCard({ booking, now }) {
 }
 
 export default function MyBookings() {
+  const navigate = useNavigate();
   const [now, setNow] = useState(new Date());
   const [user, setUser] = useState('');
   const [activeBookings, setActiveBookings] = useState([]);
+  const [mapOpen, setMapOpen] = useState(false);
+
+  const mapHighlightKeys = useMemo(() => bookingSpotKeys(activeBookings), [activeBookings]);
 
   // Fetch active bookings
   useEffect(() => {
@@ -199,6 +206,7 @@ export default function MyBookings() {
           iconClassName="map-icon"
           title="View Parking Map"
           subtitle="See all zones &amp; availability"
+          onClick={() => setMapOpen(true)}
         />
         <QuickActionCard
           icon={BookIcon}
@@ -206,8 +214,18 @@ export default function MyBookings() {
           title="Book A Spot"
           subtitle="Reserve your parking space"
           accent
+          onClick={() => navigate('/user/find-parking')}
         />
       </div>
+
+      <Modal
+        title="Parking map"
+        wide
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+      >
+        <ParkingLotMap highlightedKeys={mapHighlightKeys} />
+      </Modal>
 
       {/* ── Notifications ── */}
       <SectionTitle style={{ marginTop: 28 }}>Notifications</SectionTitle>

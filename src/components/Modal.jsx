@@ -1,11 +1,13 @@
 import './Modal.css';
 
-export default function Modal({ title, open, onClose, children }) {
+export default function Modal({ title, open, onClose, children, wide = false }) {
   if (!open) return null;
+
+  const cardClass = `modal-card${wide ? ' modal-card--wide' : ''}`;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className={cardClass} onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
           className="modal-close-btn"

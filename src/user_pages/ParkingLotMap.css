@@ -1,0 +1,86 @@
+.parking-lot-map {
+  width: 100%;
+}
+
+.parking-lot-map__header {
+  display: grid;
+  grid-template-columns: 88px repeat(5, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.parking-lot-map__corner {
+  min-height: 1px;
+}
+
+.parking-lot-map__col-head {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a8aaa);
+}
+
+.parking-lot-map__row {
+  display: grid;
+  grid-template-columns: 88px repeat(5, 1fr);
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 8px;
+}
+
+.parking-lot-map__zone-label {
+  display: flex;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary, #e2e8f0);
+}
+
+.parking-lot-map__slot {
+  aspect-ratio: 1;
+  min-height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 125, 232, 0.08);
+  border: 1px solid rgba(59, 125, 232, 0.22);
+  color: transparent;
+  font-size: 0.85rem;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.parking-lot-map__slot--yours {
+  background: rgba(59, 125, 232, 0.22);
+  border-color: rgba(59, 125, 232, 0.55);
+  color: var(--accent-lt, #7baaf7);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.parking-lot-map__legend {
+  margin: 16px 0 0;
+  font-size: 0.72rem;
+  color: var(--text-muted, #7a8aaa);
+  line-height: 1.45;
+}
+
+@media (max-width: 480px) {
+  .parking-lot-map__header,
+  .parking-lot-map__row {
+    grid-template-columns: 72px repeat(5, 1fr);
+    gap: 6px;
+  }
+
+  .parking-lot-map__zone-label {
+    font-size: 0.75rem;
+  }
+
+  .parking-lot-map__slot {
+    min-height: 36px;
+    border-radius: 10px;
+  }
+}
