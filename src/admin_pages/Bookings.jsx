@@ -1,64 +1,88 @@
+import { useState, useEffect } from 'react';
 import './Overview.css';
 import './ParkingSpots.css';
 import './Bookings.css';
 
+const ENDPOINT = import.meta.env.VITE_API_URL;
+
 export default function Bookings() {
-  // TODO: Replace with DB fetch → /api/bookings/stats
-  // Expected shape: { total, active, completed, expired }
-  const MOCK_ROW_COUNT = 10;
-  const bookingStats = { total: MOCK_ROW_COUNT, active: 0, completed: 0, expired: 0 };
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all-status');
+  const [zoneFilter, setZoneFilter] = useState('all-spots');
+
+  useEffect(() => {
+    async function fetchBookings() {
+      try {
+        const res = await fetch(`${ENDPOINT}/admin/analytics/bookings/list`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`
+          },
+        });
+        const result = await res.json();
+        setData(result);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchBookings();
+  }, []);
+
+  if (loading) return <div className="loading">Loading bookings...</div>;
+  if (!data) return null;
+
+  // Filter Logic
+  const filteredBookings = data.bookings.filter((b) => {
+    const matchesSearch = b.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.vehicle.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all-status' || b.status.toLowerCase() === statusFilter;
+    const matchesZone = zoneFilter === 'all-spots' || b.zone.toLowerCase() === zoneFilter.replace('zone-', '');
+
+    return matchesSearch && matchesStatus && matchesZone;
+  });
 
   return (
     <div className="bookings-page">
-
-      {/* ── Stat Cards ───────────────────────────────────────────────── */}
+      {/* Stat Cards */}
       <div className="stat-cards">
-
-        {/* Total Booking ── fetch: bookingStats.total */}
         <div className="stat-card stat-card--bk-total">
           <span className="stat-label">Total Booking</span>
-          <span className="stat-value">{bookingStats.total}</span>
+          <span className="stat-value">{data.stats.total}</span>
         </div>
-
-        {/* Active ── fetch: bookingStats.active */}
         <div className="stat-card stat-card--bk-active">
           <span className="stat-label">Active</span>
-          <span className="stat-value">{bookingStats.active}</span>
+          <span className="stat-value">{data.stats.active}</span>
         </div>
-
-        {/* Completed ── fetch: bookingStats.completed */}
         <div className="stat-card stat-card--bk-completed">
           <span className="stat-label">Completed</span>
-          <span className="stat-value">{bookingStats.completed}</span>
+          <span className="stat-value">{data.stats.completed}</span>
         </div>
-
-        {/* Expired ── fetch: bookingStats.expired */}
         <div className="stat-card stat-card--bk-expired">
           <span className="stat-label">Expired</span>
-          <span className="stat-value">{bookingStats.expired}</span>
+          <span className="stat-value">{data.stats.expired}</span>
         </div>
-
       </div>
 
-      {/* ── Search / Filter Card ──────────────────────────────────────── */}
+      {/* Filter Card */}
       <div className="ps-filter-card">
         <input
           className="ps-search"
           type="text"
-          placeholder="Search bookings..."
+          placeholder="Search ID or Plate..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
-
-        {/* TODO: wire value to filter state when DB is connected */}
-        <select className="ps-select" defaultValue="all-status">
+        <select className="ps-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
           <option value="all-status">All Status</option>
           <option value="active">Active</option>
           <option value="completed">Completed</option>
           <option value="expired">Expired</option>
         </select>
-
-        {/* TODO: populate with real spot IDs from DB */}
-        <select className="ps-select" defaultValue="all-spots">
-          <option value="all-spots">All Spots</option>
+        <select className="ps-select" value={zoneFilter} onChange={(e) => setZoneFilter(e.target.value)}>
+          <option value="all-spots">All Zones</option>
           <option value="zone-a">Zone A</option>
           <option value="zone-b">Zone B</option>
           <option value="zone-c">Zone C</option>
@@ -66,7 +90,7 @@ export default function Bookings() {
         </select>
       </div>
 
-      {/* ── Bookings Table ────────────────────────────────────────────── */}
+      {/* Table */}
       <div className="ps-table-card">
         <table className="ps-table">
           <thead>
@@ -78,23 +102,24 @@ export default function Bookings() {
               <th>End</th>
               <th>Duration</th>
               <th>Status</th>
-              <th>Actions</th>
+              {/* <th>Actions</th> */}
             </tr>
           </thead>
           <tbody>
-            {/* TODO: Replace with real booking rows fetched from DB */}
-            {Array.from({ length: 10 }).map((_, i) => (
+            {filteredBookings.map((b, i) => (
               <tr key={i}>
-                <td>#BK-0001</td>
-                <td>A-001</td>
-                <td>Toyota Camry</td>
-                <td>2026-04-03 08:00</td>
-                <td>2026-04-03 10:00</td>
-                <td>2h 00m</td>
+                <td>{b.id}</td>
+                <td>{b.spot}</td>
+                <td>{b.vehicle}</td>
+                <td>{b.start}</td>
+                <td>{b.end}</td>
+                <td>{b.duration}</td>
                 <td>
-                  <span className="ps-badge ps-badge--active">Active</span>
+                  <span className={`ps-badge ps-badge--${b.status.toLowerCase()}`}>
+                    {b.status}
+                  </span>
                 </td>
-                <td>—</td>{/* TODO: wire Actions (View / Cancel) when DB is connected */}
+                {/* <td><button className="action-link">View</button></td> */}
               </tr>
             ))}
           </tbody>
@@ -102,16 +127,10 @@ export default function Bookings() {
 
         <div className="ps-table-footer">
           <span className="ps-table-info">
-            Showing {MOCK_ROW_COUNT} of {bookingStats.total} Bookings
+            Showing {filteredBookings.length} of {data.stats.total} Bookings
           </span>
-          <div className="ps-pagination">
-            {/* TODO: wire Previous/Next to pagination state when DB is connected */}
-            <button className="ps-page-btn" type="button">Previous</button>
-            <button className="ps-page-btn" type="button">Next</button>
-          </div>
         </div>
       </div>
-
     </div>
   );
 }

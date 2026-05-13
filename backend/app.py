@@ -2,6 +2,7 @@ from flask import Flask
 from database import db
 from routes.auth import authentication
 from routes.protected import protected
+from routes.admin_routes import admin_bp
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 import re
@@ -30,6 +31,6 @@ Initialising the route for different apis
 """
 app.register_blueprint(authentication)
 app.register_blueprint(protected)
-
+app.register_blueprint(admin_bp)
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

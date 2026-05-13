@@ -7,6 +7,7 @@ Reference:
 from sqlalchemy import Integer, String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from database import db
+from datetime import datetime, timezone
 
 class User(db.Model):
     customerId: Mapped[int] = mapped_column(primary_key=True)
@@ -31,6 +32,8 @@ class Slot(db.Model):
     slotId: Mapped[int] = mapped_column(primary_key=True)
     zoneName: Mapped[str]
     zoneNumber: Mapped[int]
+    status: Mapped[str] = mapped_column(default="available")
+
 
 class Booking(db.Model):
     bookingId: Mapped[int] = mapped_column(primary_key=True)
@@ -39,3 +42,20 @@ class Booking(db.Model):
     licensePlate: Mapped[int]
     timeStart = mapped_column(DateTime(timezone=True))
     timeEnd = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(default="active")
+
+# class Subscription(db.Model):
+#     subscriptionId: Mapped[int] = mapped_column(primary_key=True)
+#     customerId: Mapped[int]
+#     plan: Mapped[str]               # "basic" | "premium" | "enterprise"
+#     max_bookings: Mapped[int] = mapped_column(default=2)
+#     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+#     start_date = mapped_column(DateTime(timezone=True))
+#     end_date = mapped_column(DateTime(timezone=True))
+
+class OccupancyLog(db.Model):
+    logId: Mapped[int] = mapped_column(primary_key=True)
+    slotId: Mapped[int]
+    status: Mapped[str]
+    licensePlate: Mapped[str] = mapped_column(nullable=True, default=None)
+    recorded_at = mapped_column(DateTime(timezone=True), default=lambda: datetime.now())

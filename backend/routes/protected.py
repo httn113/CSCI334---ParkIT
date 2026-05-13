@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from database import db
 from model import User, Vehicle, Booking, Slot
 from datetime import datetime, timedelta, timezone
+from services.services import BookingService, VehicleService, SlotService
 
 """
 Core features API which are required user to sign in to use
@@ -14,6 +15,10 @@ protected = Blueprint(
     import_name= __name__,
     url_prefix='/protected'
 )
+
+booking_service = BookingService()
+vehicle_service = VehicleService()
+slot_service = SlotService()
 
 @protected.route("/home", methods=["GET"])
 @jwt_required()
@@ -38,111 +43,55 @@ def personalInformation():
 @protected.route("/myProfile/addLicensePlate", methods=['POST'])
 @jwt_required()
 def addLicensePlate():
-    current_user = get_jwt_identity()
-    data = request.json
-    database_user = db.session.execute(db.select(User).filter_by(email=current_user)).scalars().first()
-    result = db.session.execute(db.select(Vehicle).filter_by(licensePlate=data["licensePlate"])).scalars().all()
-    if len(result) != 0:
-        return {
-            "Error": "License plate already exist"
-        }, 400
-    else:
-        vehicle = Vehicle(
-            customerId = database_user.customerId,
-            licensePlate = data["licensePlate"],
-            color=data["color"],
-            brand=data["brand"],
-            model = data["model"],
-            type=data["type"]
-        )
-        db.session.add(vehicle)
-        db.session.commit()
-        return "Vehicle created", 200
+    email = get_jwt_identity()
+    result, status = vehicle_service.add_vehicle(email, request.json)
+    return jsonify(result), status
 
 @protected.route("/myProfile/showLicensePlate", methods=["GET"])
 @jwt_required()
 def showLicensePlate():
-    # [{ id: 1, plate: 'TEST-1234', model: 'Toyota' }]
-    license_plates = []
-    current_user = get_jwt_identity()
-    database_user = db.session.execute(db.select(User).filter_by(email=current_user)).scalars().first()
-    database_vehicles = db.session.execute(db.select(Vehicle).filter_by(customerId=database_user.customerId)).scalars().all()
-    for vehicle in database_vehicles:
-        license_plates.append(
-            {
-                "licensePlate": vehicle.licensePlate,
-                "customerId": vehicle.customerId,
-                "model": vehicle.model,
-                "type": vehicle.type,
-                "color": vehicle.color
-            }
-        )
-    print(license_plates)
-    return license_plates, 200
+    email = get_jwt_identity()
+    result, status = vehicle_service.get_vehicles(email)
+    return jsonify(result), status
 
 @protected.route("/findParking/booking", methods=["POST"])
 @jwt_required()
 def setupBooking():
-    current_user = get_jwt_identity()
-    data = request.json
-    database_user = db.session.execute(db.select(User).filter_by(email=current_user)).scalars().first()
-    booking = Booking(
-        userId=database_user.customerId,
-        slotId=data["slotId"],
-        licensePlate=data["licensePlate"],
-        timeStart=datetime.fromisoformat(data["timeStart"]),
-        timeEnd=datetime.fromisoformat(data["timeEnd"]),
-    )
-    db.session.add(booking)
-    db.session.commit()
-    return "ok", 200
+    email = get_jwt_identity()
+    result, status = booking_service.create_booking(email, request.json)
+    return jsonify(result), status
 
 @protected.route("/myBooking/showBooking", methods=["GET"])
 @jwt_required()
 def showBooking():
-    current_user = get_jwt_identity()
-    database_user = db.session.execute(db.select(User).filter_by(email=current_user)).scalars().first()
+    email = get_jwt_identity()
+    result, status = booking_service.get_user_bookings(email)
+    return jsonify(result), status
 
-    if not database_user:
-        return jsonify({"error": "User not found"}), 404
+@protected.route("/myBooking/cancelBooking", methods=["POST"])
+@jwt_required()
+def cancelBooking():
+    data = request.json
+    email = get_jwt_identity()
+    booking_id = data["booking_id"]
+    result, status = booking_service.cancel_booking(email, booking_id)
+    return jsonify(result), status
 
-    bookings = db.session.execute(
-        db.select(Booking).filter_by(userId=database_user.customerId)
-    ).scalars().all()
+@protected.route("/searchParking", methods=["POST"])
+@jwt_required()
+def searchParking():
+    data = request.json
+    result, status = slot_service.search_available(data)
+    return jsonify(result), status
 
-    booking_list = []
-    now = datetime.now(timezone.utc)
+@protected.route("/dashboard", methods=["POST", "GET"])
+@jwt_required()
+def dashboard():
+    if request.method == "POST":
+        data = request.json
+        result, status = slot_service.get_dashboard(data=data) 
+        return jsonify(result), status
     
-    for b in bookings:
-        vehicle = db.session.execute(
-            db.select(Vehicle).filter_by(licensePlate=b.licensePlate)
-        ).scalars().first()
-        
-        slot = db.session.execute(
-            db.select(Slot).filter_by(slotId=b.slotId)
-        ).scalars().first()
-
-        booking_list.append({
-            "bookingId": b.bookingId,
-            "slotId": b.slotId,
-            "zoneName": slot.zoneName if slot else "—",
-            "zoneNumber": slot.zoneNumber if slot else "—",
-            "licensePlate": b.licensePlate,
-            "brand": vehicle.brand if vehicle else "—",
-            "model": vehicle.model if vehicle else "—",
-            "color": vehicle.color if vehicle else "—",
-            "timeStart": b.timeStart.isoformat() if b.timeStart else None,
-            "timeEnd": b.timeEnd.isoformat() if b.timeEnd else None,
-        })
-
-    # booking_list = [
-    #     b for b in booking_list
-    #     if b["timeEnd"] and datetime.fromisoformat(b["timeEnd"]) > now
-    # ]
-
-    booking_list.sort(key=lambda x: x["timeStart"] or "")
-
-    return jsonify({
-        "userName": f"{database_user.customerFName} {database_user.customerLName}",
-        "bookings": booking_list
-    }), 200
+    elif request.method == "GET":
+        result, status = slot_service.get_dashboard()
+        return jsonify(result), status

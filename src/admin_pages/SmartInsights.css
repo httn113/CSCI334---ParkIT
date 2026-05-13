@@ -1,0 +1,360 @@
+/* ── page wrapper ─────────────────────────────────────────────────────────── */
+.si-page {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: si-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes si-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── header ───────────────────────────────────────────────────────────────── */
+.si-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.si-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ── retrain button ────────────────────────────────────────────────────────── */
+.si-retrain-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: rgba(59, 125, 232, 0.14);
+    border: 1px solid rgba(59, 125, 232, 0.35);
+    color: #7baaf7;
+    font-size: 0.83rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    white-space: nowrap;
+}
+
+.si-retrain-btn svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+.si-retrain-btn:hover:not(:disabled) {
+    background: rgba(59, 125, 232, 0.24);
+    border-color: rgba(59, 125, 232, 0.6);
+    transform: translateY(-1px);
+}
+
+.si-retrain-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.si-retrain-msg {
+    font-size: 0.78rem;
+    color: #4ade80;
+}
+
+.si-retrain-msg--err {
+    color: #f87171;
+}
+
+/* ── spin animation ─────────────────────────────────────────────────────────── */
+.si-spin {
+    animation: si-spin 0.9s linear infinite;
+}
+
+@keyframes si-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── model meta ─────────────────────────────────────────────────────────────── */
+.si-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.si-meta-text {
+    font-size: 0.78rem;
+    color: var(--text-muted, #7a8aaa);
+}
+
+/* ── badges ─────────────────────────────────────────────────────────────────── */
+.si-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.si-badge--default {
+    background: rgba(59, 125, 232, 0.14);
+    color: #7baaf7;
+    border: 1px solid rgba(59, 125, 232, 0.3);
+}
+
+.si-badge--success {
+    background: rgba(74, 222, 128, 0.12);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.28);
+}
+
+.si-badge--warn {
+    background: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.28);
+}
+
+.si-badge--info {
+    background: rgba(59, 125, 232, 0.18);
+    color: #7baaf7;
+    border: 1px solid rgba(59, 125, 232, 0.35);
+    margin-left: 6px;
+    font-size: 0.66rem;
+    padding: 2px 7px;
+}
+
+/* ── stat strip ─────────────────────────────────────────────────────────────── */
+.si-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.si-stat-wrap {
+    display: flex;
+}
+
+/* ── chart card ─────────────────────────────────────────────────────────────── */
+.si-chart-card {
+    padding: 20px 24px 24px;
+}
+
+.si-chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.si-chart-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+/* ── legend ─────────────────────────────────────────────────────────────────── */
+.si-legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.si-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--text-muted, #7a8aaa);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.si-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.si-legend-dot--pred {
+    background: rgba(59, 125, 232, 0.55);
+}
+
+.si-legend-dot--avail {
+    background: rgba(74, 222, 128, 0.55);
+}
+
+.si-legend-dot--now {
+    background: transparent;
+    border: 2px dashed #4ade80;
+    width: 8px;
+    height: 8px;
+}
+
+/* ── canvas ─────────────────────────────────────────────────────────────────── */
+.si-canvas-wrap {
+    width: 100%;
+    height: 260px;
+}
+
+.si-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* ── loader ─────────────────────────────────────────────────────────────────── */
+.si-chart-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 52px 24px;
+    color: var(--text-muted, #7a8aaa);
+    font-size: 0.83rem;
+}
+
+.si-spinner {
+    width: 28px;
+    height: 28px;
+    border: 2px solid rgba(59, 125, 232, 0.2);
+    border-top-color: #3b7de8;
+    border-radius: 50%;
+    animation: si-spin 0.7s linear infinite;
+}
+
+/* ── table card ─────────────────────────────────────────────────────────────── */
+.si-table-card {
+    overflow: hidden;
+}
+
+.si-table-wrap {
+    overflow-x: auto;
+    padding: 0 24px 24px;
+}
+
+.si-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    min-width: 520px;
+}
+
+.si-table thead th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted, #7a8aaa);
+    border-bottom: 1px solid rgba(59, 125, 232, 0.15);
+    white-space: nowrap;
+}
+
+.si-table tbody td {
+    padding: 10px 12px;
+    color: #c8d6f0;
+    border-bottom: 1px solid rgba(59, 125, 232, 0.08);
+    vertical-align: middle;
+}
+
+.si-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.si-table tbody tr:hover td {
+    background: rgba(59, 125, 232, 0.06);
+}
+
+.si-table-row--now td {
+    background: rgba(74, 222, 128, 0.06) !important;
+}
+
+.si-table-row--now td:first-child {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+/* ── pct bar ─────────────────────────────────────────────────────────────────── */
+.si-pct-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.si-pct-bar {
+    height: 5px;
+    border-radius: 999px;
+    min-width: 2px;
+    max-width: 80px;
+    transition: width 0.4s ease;
+}
+
+.si-pct-bar-wrap span {
+    font-size: 0.78rem;
+    color: var(--text-muted, #7a8aaa);
+    min-width: 34px;
+}
+
+/* ── responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .si-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .si-chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .si-canvas-wrap {
+        height: 210px;
+    }
+
+    .si-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .si-chart-card {
+        padding: 16px 16px 20px;
+    }
+
+    .si-canvas-wrap {
+        height: 180px;
+    }
+
+    .si-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}

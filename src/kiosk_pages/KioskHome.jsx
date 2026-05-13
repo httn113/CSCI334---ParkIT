@@ -3,6 +3,8 @@ import { useAuth } from '../AuthContext.jsx';
 import acceptPaymentImg from '../assets/accept_payment.jpg';
 import './KioskHome.css';
 
+const ENDPOINT = import.meta.env.VITE_API_URL;
+
 const STEPS = [
   { number: 1, label: 'Vehicle' },
   { number: 2, label: 'Duration' },
@@ -10,7 +12,7 @@ const STEPS = [
   { number: 4, label: 'Confirm' },
 ];
 
-const DURATION_OPTIONS = [30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480];
+const DURATION_OPTIONS = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480];
 
 function formatDuration(mins) {
   if (mins < 60) return `${mins} min`;
@@ -38,8 +40,32 @@ function getRoundedTime() {
 }
 
 function isTimePast(dateStr, hour, minute) {
-  const selected = new Date(`${dateStr}T${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}:00`);
+  const selected = new Date(`${dateStr}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`);
   return selected <= new Date();
+}
+
+// search_available expects "%Y-%m-%d %H:%M:%S"
+function toSearchFormat(dateStr, hour, minute) {
+  return `${dateStr} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
+}
+
+// create_booking expects ISO string
+function toISOLocal(dateStr, hour, minute) {
+  return `${dateStr}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
+}
+
+function addMinutes(dateStr, hour, minute, durationMins) {
+  const dt = new Date(`${dateStr}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`);
+  dt.setMinutes(dt.getMinutes() + durationMins);
+  return {
+    dateStr: dt.toISOString().slice(0, 10),
+    hour: dt.getHours(),
+    minute: dt.getMinutes(),
+  };
+}
+
+function getToken() {
+  return localStorage.getItem('access_token');
 }
 
 export default function KioskHome() {
@@ -59,10 +85,19 @@ export default function KioskHome() {
   const [parkingMinute, setParkingMinute] = useState(defaultTime.minute);
   const [duration, setDuration] = useState(30);
 
+  // Slot search
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+  const [assignedSlot, setAssignedSlot] = useState(null); // { slotId, zoneName, zoneNumber }
+
   // Step 3
   const [paymentMethod, setPaymentMethod] = useState(null);
 
-  const handleFindSpot = () => {
+  // Step 4 — booking
+  const [booking, setBooking] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
+
+  const resetAll = () => {
     setStep(1);
     setLicensePlate('');
     setParkingDate(today);
@@ -70,38 +105,114 @@ export default function KioskHome() {
     setParkingHour(t.hour);
     setParkingMinute(t.minute);
     setDuration(30);
+    setSearching(false);
+    setSearchError(null);
+    setAssignedSlot(null);
     setPaymentMethod(null);
+    setBooking(false);
+    setBookingError(null);
     setPaid(false);
-    setShowCard(true);
   };
 
-  const handleBack = () => {
-    setShowCard(false);
-    setStep(1);
-    setLicensePlate('');
-    setParkingDate(today);
-    const t = getRoundedTime();
-    setParkingHour(t.hour);
-    setParkingMinute(t.minute);
-    setDuration(30);
-    setPaymentMethod(null);
-    setPaid(false);
+  const handleFindSpot = () => { resetAll(); setShowCard(true); };
+  const handleBack = () => { setShowCard(false); resetAll(); };
+
+  // Step 2 Continue — search for a slot and auto-assign the first one
+  const handleSearchAndContinue = async () => {
+    setSearching(true);
+    setSearchError(null);
+    setAssignedSlot(null);
+
+    const end = addMinutes(parkingDate, parkingHour, parkingMinute, duration);
+
+    try {
+      const res = await fetch(`${ENDPOINT}/protected/searchParking`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          timeStart: toSearchFormat(parkingDate, parkingHour, parkingMinute),
+          timeEnd: toSearchFormat(end.dateStr, end.hour, end.minute),
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setSearchError(json.error || 'Failed to search for available slots.');
+        return;
+      }
+
+      if (!Array.isArray(json) || json.length === 0) {
+        setSearchError('No available spots for this time. Try a different time or duration.');
+        return;
+      }
+
+      // Auto-assign first available slot — user doesn't choose
+      setAssignedSlot(json[0]);
+      setStep(3);
+    } catch {
+      setSearchError('Could not connect to server. Please try again.');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  // Step 4 Pay Now — create the booking
+  const handlePayNow = async () => {
+    setBooking(true);
+    setBookingError(null);
+
+    const end = addMinutes(parkingDate, parkingHour, parkingMinute, duration);
+
+    try {
+      const res = await fetch(`${ENDPOINT}/protected/findParking/booking`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          slotId: assignedSlot.slotId,
+          licensePlate: licensePlate.trim().toUpperCase(),
+          timeStart: toISOLocal(parkingDate, parkingHour, parkingMinute),
+          timeEnd: toISOLocal(end.dateStr, end.hour, end.minute),
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setBookingError(json.error || 'Booking failed. Please try again.');
+        return;
+      }
+
+      setPaid(true);
+    } catch {
+      setBookingError('Could not connect to server. Please try again.');
+    } finally {
+      setBooking(false);
+    }
   };
 
   const timePast = isTimePast(parkingDate, parkingHour, parkingMinute);
-
-  const formattedTime = `${String(parkingHour).padStart(2,'0')}:${String(parkingMinute).padStart(2,'0')}`;
+  const formattedTime = `${String(parkingHour).padStart(2, '0')}:${String(parkingMinute).padStart(2, '0')}`;
+  const end = addMinutes(parkingDate, parkingHour, parkingMinute, duration);
+  const formattedEndTime = `${String(end.hour).padStart(2, '0')}:${String(end.minute).padStart(2, '0')}`;
+  const spotLabel = assignedSlot
+    ? `${assignedSlot.zoneName}-${String(assignedSlot.zoneNumber).padStart(3, '0')}`
+    : '—';
 
   return (
     <div className="kiosk-page">
-      {/* Animated background */}
       <div className="kiosk-bg">
         <div className="korb korb-1" />
         <div className="korb korb-2" />
         <div className="korb korb-3" />
       </div>
 
-      {/* Brand */}
       <div className="kiosk-brand">
         <div className="kiosk-brand-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -115,7 +226,6 @@ export default function KioskHome() {
         </div>
       </div>
 
-      {/* Logout */}
       <button className="kiosk-logout-btn" onClick={logout} aria-label="Logout">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -141,43 +251,25 @@ export default function KioskHome() {
 
       {showCard && (
         <div className="kiosk-card">
-          {/* Step indicator — hidden after Pay Now */}
-          {!paid && (
-            <div className="kiosk-steps">
-              {STEPS.map((s, idx) => (
-                <div key={s.number} className="kiosk-step-item">
-                  <div className={`kiosk-step-circle ${step === s.number ? 'active' : step > s.number ? 'done' : ''}`}>
-                    {step > s.number ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    ) : (
-                      s.number
-                    )}
-                  </div>
-                  <span className={`kiosk-step-label ${step === s.number ? 'active' : ''}`}>{s.label}</span>
-                  {idx < STEPS.length - 1 && <div className={`kiosk-step-line ${step > s.number ? 'done' : ''}`} />}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* All steps done indicator when paid */}
-          {paid && (
-            <div className="kiosk-steps">
-              {STEPS.map((s, idx) => (
-                <div key={s.number} className="kiosk-step-item">
-                  <div className="kiosk-step-circle done">
+          {/* Step indicator */}
+          <div className="kiosk-steps">
+            {STEPS.map((s, idx) => (
+              <div key={s.number} className="kiosk-step-item">
+                <div className={`kiosk-step-circle ${paid ? 'done' : step === s.number ? 'active' : step > s.number ? 'done' : ''
+                  }`}>
+                  {(paid || step > s.number) ? (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
-                  </div>
-                  <span className="kiosk-step-label">{s.label}</span>
-                  {idx < STEPS.length - 1 && <div className="kiosk-step-line done" />}
+                  ) : s.number}
                 </div>
-              ))}
-            </div>
-          )}
+                <span className={`kiosk-step-label ${step === s.number && !paid ? 'active' : ''}`}>{s.label}</span>
+                {idx < STEPS.length - 1 && (
+                  <div className={`kiosk-step-line ${paid || step > s.number ? 'done' : ''}`} />
+                )}
+              </div>
+            ))}
+          </div>
 
           <div className="kiosk-step-content">
 
@@ -185,7 +277,7 @@ export default function KioskHome() {
             {!paid && step === 1 && (
               <div className="kiosk-step-panel">
                 <h2 className="kiosk-step-heading">Enter License Plate</h2>
-                <p className="kiosk-step-sub">Please Enter Your License Plate</p>
+                <p className="kiosk-step-sub">Please enter your license plate</p>
                 <div className="kiosk-input-wrapper">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="kiosk-input-icon">
                     <rect x="1" y="6" width="22" height="13" rx="2" />
@@ -222,7 +314,6 @@ export default function KioskHome() {
                 <h2 className="kiosk-step-heading">Select Duration</h2>
                 <p className="kiosk-step-sub">Choose your parking date, time and duration</p>
 
-                {/* Date */}
                 <div className="kiosk-field-row">
                   <label className="kiosk-field-label">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -238,11 +329,10 @@ export default function KioskHome() {
                     className="kiosk-input kiosk-date-input"
                     value={parkingDate}
                     min={today}
-                    onChange={(e) => setParkingDate(e.target.value)}
+                    onChange={(e) => { setParkingDate(e.target.value); setSearchError(null); }}
                   />
                 </div>
 
-                {/* Time */}
                 <div className="kiosk-field-row">
                   <label className="kiosk-field-label">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -255,20 +345,20 @@ export default function KioskHome() {
                     <select
                       className="kiosk-select"
                       value={parkingHour}
-                      onChange={(e) => setParkingHour(Number(e.target.value))}
+                      onChange={(e) => { setParkingHour(Number(e.target.value)); setSearchError(null); }}
                     >
                       {Array.from({ length: 24 }, (_, i) => (
-                        <option key={i} value={i}>{String(i).padStart(2,'0')}</option>
+                        <option key={i} value={i}>{String(i).padStart(2, '0')}</option>
                       ))}
                     </select>
                     <span className="kiosk-time-sep">:</span>
                     <select
                       className="kiosk-select"
                       value={parkingMinute}
-                      onChange={(e) => setParkingMinute(Number(e.target.value))}
+                      onChange={(e) => { setParkingMinute(Number(e.target.value)); setSearchError(null); }}
                     >
-                      {[0,10,20,30,40,50].map(m => (
-                        <option key={m} value={m}>{String(m).padStart(2,'0')}</option>
+                      {[0, 10, 20, 30, 40, 50].map(m => (
+                        <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
                       ))}
                     </select>
                   </div>
@@ -285,7 +375,6 @@ export default function KioskHome() {
                   </p>
                 )}
 
-                {/* Duration */}
                 <div className="kiosk-field-row kiosk-field-col">
                   <label className="kiosk-field-label">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -299,7 +388,7 @@ export default function KioskHome() {
                       <button
                         key={opt}
                         className={`kiosk-duration-pill${duration === opt ? ' selected' : ''}`}
-                        onClick={() => setDuration(opt)}
+                        onClick={() => { setDuration(opt); setSearchError(null); }}
                         type="button"
                       >
                         {formatDuration(opt)}
@@ -308,16 +397,40 @@ export default function KioskHome() {
                   </div>
                 </div>
 
+                {searchError && (
+                  <p className="kiosk-error-msg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    {searchError}
+                  </p>
+                )}
+
                 <button
                   className="kiosk-continue-btn"
-                  onClick={() => setStep(3)}
-                  disabled={timePast}
+                  onClick={handleSearchAndContinue}
+                  disabled={timePast || searching}
                 >
-                  Continue
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
+                  {searching ? (
+                    <>
+                      <svg className="kiosk-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="23 4 23 10 17 10" />
+                        <polyline points="1 20 1 14 7 14" />
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                      </svg>
+                      Finding spot…
+                    </>
+                  ) : (
+                    <>
+                      Continue
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </>
+                  )}
                 </button>
               </div>
             )}
@@ -328,8 +441,17 @@ export default function KioskHome() {
                 <h2 className="kiosk-step-heading">Payment Method</h2>
                 <p className="kiosk-step-sub">Select how you would like to pay</p>
 
+                {assignedSlot && (
+                  <div className="kiosk-spot-assigned">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    Spot assigned: <strong>{spotLabel}</strong>
+                  </div>
+                )}
+
                 <div className="kiosk-payment-options">
-                  {/* Cash */}
                   <button
                     type="button"
                     className={`kiosk-payment-card${paymentMethod === 'cash' ? ' selected' : ''}`}
@@ -352,7 +474,6 @@ export default function KioskHome() {
                     )}
                   </button>
 
-                  {/* Card */}
                   <button
                     type="button"
                     className={`kiosk-payment-card${paymentMethod === 'card' ? ' selected' : ''}`}
@@ -367,11 +488,7 @@ export default function KioskHome() {
                     <span className="kiosk-payment-label">Card Payment</span>
                     <span className="kiosk-payment-accept">We Accept</span>
                     <div className="kiosk-brand-logos">
-                      <img
-                        src={acceptPaymentImg}
-                        alt="Visa, Mastercard, American Express accepted"
-                        className="kiosk-accept-payment-img"
-                      />
+                      <img src={acceptPaymentImg} alt="Visa, Mastercard, American Express accepted" className="kiosk-accept-payment-img" />
                     </div>
                     {paymentMethod === 'card' && (
                       <div className="kiosk-payment-check">
@@ -413,7 +530,18 @@ export default function KioskHome() {
                       </svg>
                       License Plate
                     </span>
-                    <span className="kiosk-confirm-value kiosk-confirm-plate">{licensePlate}</span>
+                    <span className="kiosk-confirm-value kiosk-confirm-plate">{licensePlate.toUpperCase()}</span>
+                  </div>
+                  <div className="kiosk-confirm-divider" />
+                  <div className="kiosk-confirm-row">
+                    <span className="kiosk-confirm-label">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                      Spot
+                    </span>
+                    <span className="kiosk-confirm-value">{spotLabel}</span>
                   </div>
                   <div className="kiosk-confirm-divider" />
                   <div className="kiosk-confirm-row">
@@ -437,7 +565,7 @@ export default function KioskHome() {
                       </svg>
                       Time
                     </span>
-                    <span className="kiosk-confirm-value">{formattedTime}</span>
+                    <span className="kiosk-confirm-value">{formattedTime} → {formattedEndTime}</span>
                   </div>
                   <div className="kiosk-confirm-divider" />
                   <div className="kiosk-confirm-row">
@@ -465,20 +593,45 @@ export default function KioskHome() {
                   </div>
                 </div>
 
+                {bookingError && (
+                  <p className="kiosk-error-msg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    {bookingError}
+                  </p>
+                )}
+
                 <button
                   className="kiosk-continue-btn kiosk-paynow-btn"
-                  onClick={() => setPaid(true)}
+                  onClick={handlePayNow}
+                  disabled={booking}
                 >
-                  Pay Now
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
+                  {booking ? (
+                    <>
+                      <svg className="kiosk-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="23 4 23 10 17 10" />
+                        <polyline points="1 20 1 14 7 14" />
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                      </svg>
+                      Processing…
+                    </>
+                  ) : (
+                    <>
+                      Pay Now
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </>
+                  )}
                 </button>
               </div>
             )}
 
-            {/* ── STEP 5: Result ── */}
+            {/* ── Result: Cash ── */}
             {paid && paymentMethod === 'cash' && (
               <div className="kiosk-step-panel kiosk-result">
                 <div className="kiosk-result-icon kiosk-result-icon--cash">
@@ -488,10 +641,10 @@ export default function KioskHome() {
                     <path d="M5 12H1M23 12h-4" />
                   </svg>
                 </div>
-                <h2 className="kiosk-step-heading">Queue Number</h2>
+                <h2 className="kiosk-step-heading">Booking Confirmed</h2>
                 <p className="kiosk-step-sub">Please proceed to the payment counter</p>
-                <div className="kiosk-queue-number">#1</div>
-                <p className="kiosk-result-hint">Show this number at the counter to complete your payment</p>
+                <div className="kiosk-queue-number">{spotLabel}</div>
+                <p className="kiosk-result-hint">Show this spot number at the counter to complete your cash payment</p>
                 <button className="kiosk-continue-btn kiosk-finish-btn" onClick={handleBack}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -502,6 +655,7 @@ export default function KioskHome() {
               </div>
             )}
 
+            {/* ── Result: Card ── */}
             {paid && paymentMethod === 'card' && (
               <div className="kiosk-step-panel kiosk-result">
                 <div className="kiosk-result-icon kiosk-result-icon--card">
@@ -510,8 +664,8 @@ export default function KioskHome() {
                     <line x1="1" y1="10" x2="23" y2="10" />
                   </svg>
                 </div>
-                <h2 className="kiosk-step-heading">Card Payment</h2>
-                <p className="kiosk-step-sub">Please Pay with POS Below</p>
+                <h2 className="kiosk-step-heading">Booking Confirmed</h2>
+                <p className="kiosk-step-sub">Spot {spotLabel} — please tap your card below</p>
                 <div className="kiosk-pos-indicator">
                   <div className="kiosk-pos-pulse" />
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -532,7 +686,6 @@ export default function KioskHome() {
 
           </div>
 
-          {/* Back button — hidden on result screen */}
           {!paid && (
             <button className="kiosk-back-btn" onClick={step === 1 ? handleBack : () => setStep(step - 1)}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

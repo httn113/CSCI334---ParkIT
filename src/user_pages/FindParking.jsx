@@ -54,7 +54,7 @@ export default function FindParking() {
 
   async function handleFindParking(){
     try {
-      // const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem("access_token");
       // console.log(token)
 
       console.log(selectedDate); // 2026-04-29
@@ -71,10 +71,10 @@ export default function FindParking() {
 
       console.log(timeStart, timeEnd);  
        
-      const res = await fetch(`${ENDPOINT}/auth/test/searchParking`, {
+      const res = await fetch(`${ENDPOINT}/protected/searchParking`, {
         method: "POST",
         headers: {
-          // "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({

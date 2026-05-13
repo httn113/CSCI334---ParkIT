@@ -1,0 +1,48 @@
+{
+  "hash": "f19e3597",
+  "configHash": "10c9dbf8",
+  "lockfileHash": "7703c681",
+  "browserHash": "bd8f3a44",
+  "optimized": {
+    "dayjs": {
+      "src": "../../node_modules/dayjs/dayjs.min.js",
+      "file": "dayjs.js",
+      "fileHash": "1e991fa3",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "47372d59",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "1826267a",
+      "needsInterop": false
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "a6a67f35",
+      "needsInterop": true
+    },
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "05fc8cff",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-BVTlhY3a": {
+      "file": "chunk-BVTlhY3a.js",
+      "isDynamicEntry": false
+    },
+    "react-dom-oqhOWQSG": {
+      "file": "react-dom-oqhOWQSG.js",
+      "isDynamicEntry": false
+    }
+  }
+}

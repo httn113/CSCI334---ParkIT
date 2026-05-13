@@ -8,17 +8,7 @@ import UserHome from './user_pages/UserHome.jsx';
 import KioskAppRoot from './kiosk_pages/KioskAppRoot.jsx';
 
 function AppRoutes() {
-  // const { role } = useAuth();
   const { token } = useAuth(); // use token instead of role
-
-  // if (!role) {
-  //   return (
-  //     <Routes>
-  //       <Route path="/login" element={<Login />} />
-  //       <Route path="*" element={<Navigate to="/login" replace />} />
-  //     </Routes>
-  //   );
-  // }
 
   if (!token) {
     return (
@@ -28,24 +18,26 @@ function AppRoutes() {
       </Routes>
     );
   }
-  // DEAL WITH ADMIN LATER
-  // if (role === 'admin') {
-  //   return (
-  //     <Routes>
-  //       <Route path="/admin/*" element={<Home />} />
-  //       <Route path="*" element={<Navigate to="/admin/overview" replace />} />
-  //     </Routes>
-  //   );
-  // }
+  // DEAL WITH ADMIN 
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  const role = payload.role;
+  if (role === 'admin') {
+    return (
+      <Routes>
+        <Route path="/admin/*" element={<Home />} />
+        <Route path="*" element={<Navigate to="/admin/overview" replace />} />
+      </Routes>
+    );
+  }
 
-  // if (role === 'kiosk') {
-  //   return (
-  //     <Routes>
-  //       <Route path="/kiosk/*" element={<KioskAppRoot />} />
-  //       <Route path="*" element={<Navigate to="/kiosk" replace />} />
-  //     </Routes>
-  //   );
-  // }
+  if (role === 'kiosk') {
+    return (
+      <Routes>
+        <Route path="/kiosk/*" element={<KioskAppRoot />} />
+        <Route path="*" element={<Navigate to="/kiosk" replace />} />
+      </Routes>
+    );
+  }
 
   return (
     <Routes>

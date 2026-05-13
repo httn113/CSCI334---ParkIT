@@ -133,6 +133,7 @@ export default function MyBookings() {
   // Fetch active bookings
   useEffect(() => {
     async function fetchActiveBookings() {
+      console.log(localStorage.getItem("access_token"))
       try {
         const res = await fetch(`${ENDPOINT}/protected/myBooking/showBooking`, {
           headers: {
@@ -156,6 +157,29 @@ export default function MyBookings() {
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
+  }, []);
+
+  const [dashboardStats, setDashboardStats] = useState({ available: 0, total: 0 });
+
+  useEffect(() => {
+    async function fetchDashboard() {
+      try {
+        const res = await fetch(`${ENDPOINT}/protected/dashboard`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setDashboardStats({
+          available: data.available ?? 0,
+          total: data.total_capacity ?? 0,
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchDashboard();
   }, []);
 
   const dayName = now.toLocaleDateString('en-GB', { weekday: 'long' });
@@ -194,8 +218,8 @@ export default function MyBookings() {
       {/* ── Spot info cards ── */}
       <SectionTitle style={{ marginTop: 28 }}>Parking Overview</SectionTitle>
       <div className="spot-cards-row">
-        <StatCard label="Available Spots" value={10} colorClass="available" />
-        <StatCard label="Visitor Spots" value={5} />
+        <StatCard label="Available Spots" value={dashboardStats.available} colorClass="available" />
+        <StatCard label="Total Spots" value={dashboardStats.total} />
       </div>
 
       {/* ── Quick Actions ── */}
