@@ -1,5 +1,5 @@
 from database import db
-from model import User, Vehicle, Slot, Booking, OccupancyLog
+from model import User, Vehicle, Slot, Booking, OccupancyLog, Subscription
 from datetime import datetime, timedelta
 
 class UserRepository:
@@ -42,7 +42,46 @@ class UserRepository:
         db.session.add(user)
         db.session.commit()
         return user
-    
+
+
+class SubscriptionRepository:
+    def get_by_customer(self, customer_id: int):
+        return db.session.execute(
+            db.select(Subscription).filter_by(customerId=customer_id)
+        ).scalars().first()
+
+    def create_or_update(self, customer_id: int, plan: str):
+        existing = self.get_by_customer(customer_id)
+        if existing:
+            existing.plan = plan
+            existing.is_active = True
+            existing.start_date = datetime.now()
+            db.session.commit()
+            return existing
+        else:
+            subscription = Subscription(
+                customerId=customer_id,
+                plan=plan,
+                is_active=True,
+                start_date=datetime.now()
+            )
+            db.session.add(subscription)
+            db.session.commit()
+            return subscription
+
+    def cancel(self, customer_id: int):
+        subscription = self.get_by_customer(customer_id)
+        if subscription:
+            subscription.is_active = False
+            subscription.end_date = datetime.now()
+            db.session.commit()
+            return subscription
+        return None
+
+    def is_active(self, customer_id: int) -> bool:
+        subscription = self.get_by_customer(customer_id)
+        return subscription and subscription.is_active
+
 class VehicleRepository:
 
     def get_all(self):

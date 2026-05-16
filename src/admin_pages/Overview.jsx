@@ -25,8 +25,7 @@ export default function Overview() {
   });
 
   useEffect(() => {
-    async function ABC(){
-      console.log(localStorage.getItem("access_token"));
+    async function fetchStats() {
       try {
         const res = await fetch(`${ENDPOINT}/admin/analytics/slotStatus`, {
           headers: {
@@ -36,16 +35,25 @@ export default function Overview() {
         if (!res.ok) {
           const err = await res.json();
           console.log("Error response:", err);
+          return;
         }
         const data = await res.json();
         console.log(data);
         setStats(data)
       }
-      catch(err){
+      catch (err) {
         console.log(err);
       }
     }
-    ABC();
+
+    // Fetch immediately
+    fetchStats();
+
+    // Then fetch every 5 seconds for real-time updates
+    const interval = setInterval(fetchStats, 5000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
   }, [])
 
   // TODO: Replace with a real-time fetch → /api/activity/recent (returns last N events, sorted newest-first)

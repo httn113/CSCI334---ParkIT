@@ -48,14 +48,14 @@ export default function FindParking() {
   const [selectedDurationMinutes, setSelectedDurationMinutes] = useState('60');
 
   const [slots, setSlots] = useState([]);
+  const [recommendations, setRecommendations] = useState(null);
   
   const visibleZones =
     selectedZone === 'all' ? ZONES : ZONES.filter((z) => z.id === selectedZone);
 
-  async function handleFindParking(){
+  async function handleFindParking() {
     try {
       const token = localStorage.getItem("access_token");
-      // console.log(token)
 
       console.log(selectedDate); // 2026-04-29
       console.log(selectedHour); // 08
@@ -69,8 +69,8 @@ export default function FindParking() {
         .add(selectedDurationMinutes, "minute")
         .format("YYYY-MM-DD HH:mm:ss");
 
-      console.log(timeStart, timeEnd);  
-       
+      console.log(timeStart, timeEnd);
+
       const res = await fetch(`${ENDPOINT}/protected/searchParking`, {
         method: "POST",
         headers: {
@@ -83,36 +83,51 @@ export default function FindParking() {
         })
       });
 
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Failed to fetch data:", err);
+        return;
+      }
+
       const data = await res.json();
       setSlots(data);
+
+      // Fetch recommendations
+      await fetchRecommendations(timeStart, timeEnd);
 
       localStorage.setItem('parking_search', JSON.stringify({
         date: selectedDate,
         hour: selectedHour,
         minute: selectedMinute,
         durationMinutes: Number(selectedDurationMinutes),
-        // slotId: slot.slotId,
       }));
-
-      // const slotByZone = {};
-      // for (const slot of slots){
-      //   const zone = slot.zoneName;
-      //   if (!slotByZone[zone]){
-      //     slotByZone[zone] = [];
-      //   }
-      //   slotByZone[zone].push(slot);
-      // }
-
-      if (!res.ok) {
-        const err = await res.json();
-        console.error("Failed to fetch data:", err);
-        return;
-      }
-   }
+    }
     catch (err) {
       console.error("Failed to fetch data:", err);
     }
- }
+    }
+
+  const fetchRecommendations = async (startTime, endTime) => {
+    try {
+      const res = await fetch(`${ENDPOINT}/protected/parking/recommendations`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          timeStart: startTime,
+          timeEnd: endTime,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRecommendations(data.recommendations);
+      }
+    } catch (err) {
+      console.error("Failed to fetch recommendations:", err);
+    }
+  };
   
   
   return (
@@ -183,6 +198,53 @@ export default function FindParking() {
         </GlassCard>
       </div>
 
+      {/* ── Section 1.5: Smart Recommendations ── */}
+      {recommendations && (
+        <>
+          <SectionTitle>💡 Smart Recommendations</SectionTitle>
+          <div className="fp-recommendations-grid">
+            <GlassCard className="fp-recommendation-card fp-rec-nearest">
+              <div className="fp-rec-icon">📍</div>
+              <h3 className="fp-rec-title">Nearest Zone</h3>
+              <div className="fp-rec-zone">{recommendations.nearest_zone.zone}</div>
+              <div className="fp-rec-stat">
+                <span className="fp-rec-percentage">{recommendations.nearest_zone.availability_percentage}%</span>
+                <span className="fp-rec-label">available</span>
+              </div>
+              <div className="fp-rec-detail">
+                {recommendations.nearest_zone.available_slots} of {recommendations.nearest_zone.total_slots} spots free
+              </div>
+            </GlassCard>
+
+            <GlassCard className="fp-recommendation-card fp-rec-least-busy">
+              <div className="fp-rec-icon">🏎️</div>
+              <h3 className="fp-rec-title">Least Busy</h3>
+              <div className="fp-rec-zone">{recommendations.least_congested_zone.zone}</div>
+              <div className="fp-rec-stat">
+                <span className="fp-rec-percentage">{recommendations.least_congested_zone.occupancy_percentage}%</span>
+                <span className="fp-rec-label">occupied</span>
+              </div>
+              <div className="fp-rec-detail">
+                {recommendations.least_congested_zone.available_slots} of {recommendations.least_congested_zone.total_slots} spots free
+              </div>
+            </GlassCard>
+
+            <GlassCard className="fp-recommendation-card fp-rec-best">
+              <div className="fp-rec-icon">⭐</div>
+              <h3 className="fp-rec-title">Best Availability</h3>
+              <div className="fp-rec-zone">{recommendations.best_availability_zone.zone}</div>
+              <div className="fp-rec-stat">
+                <span className="fp-rec-percentage">{recommendations.best_availability_zone.available_slots}</span>
+                <span className="fp-rec-label">spots available</span>
+              </div>
+              <div className="fp-rec-detail">
+                {recommendations.best_availability_zone.availability_percentage}% of total capacity
+              </div>
+            </GlassCard>
+          </div>
+        </>
+      )}
+
       {/* ── Section 2: Zone filter tabs ── */}
       <SectionTitle>Filter by Zone</SectionTitle>
       <FilterPillGroup
@@ -190,6 +252,8 @@ export default function FindParking() {
         activeId={selectedZone}
         onSelect={setSelectedZone}
       />
+
+      
 
       {/* ── Section 3: Zone cards ── */}
       <SectionTitle>Available Slots</SectionTitle>

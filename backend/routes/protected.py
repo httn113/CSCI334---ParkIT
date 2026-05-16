@@ -3,8 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from database import db
 from model import User, Vehicle, Booking, Slot
 from datetime import datetime, timedelta, timezone
-from services.services import BookingService, VehicleService, SlotService
-
+from services.services import BookingService, VehicleService, SlotService, SubscriptionService, RecommendationService
 """
 Core features API which are required user to sign in to use
 (JWT access token required)
@@ -19,6 +18,8 @@ protected = Blueprint(
 booking_service = BookingService()
 vehicle_service = VehicleService()
 slot_service = SlotService()
+subscription_service = SubscriptionService()
+recommendation_service = RecommendationService()
 
 @protected.route("/home", methods=["GET"])
 @jwt_required()
@@ -52,6 +53,30 @@ def addLicensePlate():
 def showLicensePlate():
     email = get_jwt_identity()
     result, status = vehicle_service.get_vehicles(email)
+    return jsonify(result), status
+
+
+@protected.route("/subscription/current", methods=["GET"])
+@jwt_required()
+def getCurrentSubscription():
+    email = get_jwt_identity()
+    result, status = subscription_service.get_user_subscription(email)
+    return jsonify(result), status
+
+@protected.route("/subscription/upgrade", methods=["POST"])
+@jwt_required()
+def upgradeSubscription():
+    email = get_jwt_identity()
+    data = request.json
+    plan = data.get("plan")
+    result, status = subscription_service.upgrade_subscription(email, plan)
+    return jsonify(result), status
+
+@protected.route("/subscription/cancel", methods=["POST"])
+@jwt_required()
+def cancelSubscription():
+    email = get_jwt_identity()
+    result, status = subscription_service.cancel_subscription(email)
     return jsonify(result), status
 
 @protected.route("/findParking/booking", methods=["POST"])
@@ -95,3 +120,13 @@ def dashboard():
     elif request.method == "GET":
         result, status = slot_service.get_dashboard()
         return jsonify(result), status
+
+@protected.route("/parking/recommendations", methods=["POST"])
+@jwt_required()
+def getRecommendations():
+    email = get_jwt_identity()
+    data = request.json
+    time_start = datetime.fromisoformat(data["timeStart"])
+    time_end = datetime.fromisoformat(data["timeEnd"])
+    result, status = recommendation_service.get_recommendations(time_start, time_end)
+    return jsonify(result), status

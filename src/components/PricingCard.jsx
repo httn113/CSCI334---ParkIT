@@ -1,6 +1,6 @@
 import './PricingCard.css';
 
-export default function PricingCard({ tier }) {
+export default function PricingCard({ tier, onCtaClick, isDisabled }) {
   return (
     <article className={`pricing-card pricing-card--${tier.variant}`}>
       <h2 className="pricing-card-name">{tier.name}</h2>
@@ -30,6 +30,8 @@ export default function PricingCard({ tier }) {
         <button
           type="button"
           className={`pricing-btn pricing-btn--${tier.variant}${tier.ctaCurrent ? ' pricing-btn--current' : ''}`}
+          onClick={onCtaClick}
+          disabled={isDisabled}
         >
           {tier.ctaLabel}
         </button>

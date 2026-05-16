@@ -5,3 +5,4 @@ flask_cors
 Pillow
 numpy
 scikit-learn
+APScheduler

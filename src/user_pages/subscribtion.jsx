@@ -1,5 +1,8 @@
 import './Subscribtion.css';
 import PricingCard from '../components/PricingCard';
+import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+
 
 const TIERS = [
   {
@@ -16,8 +19,7 @@ const TIERS = [
       'Contactless payment: quick entry and exit using QR codes or e-wallets.',
       'Loyalty points: earn points for every hour parked.',
     ],
-    ctaLabel: 'Current plan',
-    ctaCurrent: true,
+    ctaLabel: 'Get Started',  // Changed from 'Current plan'
   },
   {
     id: 'premium',
@@ -27,16 +29,15 @@ const TIERS = [
     priceNote: '/month',
     includes: 'Everything in Standard, plus:',
     features: [
-      'Lower booking fees during non-busy times.',
-      'Single booking up to 24 hours.',
-      '"Time expiring" alerts; extend your parking session from your phone.',
-      'Special gift voucher during your birthday month.',
-      'Double loyalty points per hour during non-busy times.',
-      'Lower penalty pricing if you exceed your booked hours.',
-      'Oversized and minivan spots.',
+      '✓ 10% discount on all bookings',
+      'Lower booking fees during non-busy times (Coming Soon)',
+      'Single booking up to 24 hours (Coming Soon)',
+      '"Time expiring" alerts (Coming Soon)',
+      'Special gift voucher during birthday month (Coming Soon)',
+      'Double loyalty points during non-busy times (Coming Soon)',
+      'Oversized and minivan spots (Coming Soon)',
     ],
     ctaLabel: 'Upgrade to Premium',
-    ctaCurrent: false,
   },
   {
     id: 'gold',
@@ -46,58 +47,69 @@ const TIERS = [
     priceNote: '/month',
     includes: 'Everything in Premium, plus:',
     features: [
-      'Priority spots, always available.',
-      '24 hours of free parking each month.',
-      'Book for non-registered vehicles (friends and family) for up to 4 hours.',
-      'Standard rates apply for time beyond your booked window.',
+      '✓ 20% discount on all bookings',
+      'Priority spots, always available (Coming Soon)',
+      '24 hours of free parking each month (Coming Soon)',
+      'Book for non-registered vehicles (Coming Soon)',
+      'Concierge support (Coming Soon)',
+      'Extended booking up to 48 hours (Coming Soon)',
+      'VIP event parking access (Coming Soon)',
     ],
     ctaLabel: 'Upgrade to Gold',
-    ctaCurrent: false,
   },
 ];
-
 const COMPARISON_ROWS = [
+  {
+    feature: 'Booking discount',
+    standard: { kind: 'text', value: 'None' },
+    premium: { kind: 'text', value: '10% discount' },
+    gold: { kind: 'text', value: '20% discount' },
+  },
   {
     feature: 'Max duration',
     standard: { kind: 'text', value: '3 hours' },
-    premium: { kind: 'text', value: '24 hours' },
-    gold: { kind: 'text', value: 'Unlimited' },
+    premium: { kind: 'text', value: '24 hours', coming_soon: true },
+    gold: { kind: 'text', value: 'Unlimited', coming_soon: true },
   },
   {
     feature: 'Off-peak rates',
     standard: { kind: 'bool', value: false },
-    premium: { kind: 'bool', value: true },
-    gold: { kind: 'bool', value: true },
+    premium: { kind: 'bool', value: true, coming_soon: true },
+    gold: { kind: 'bool', value: true, coming_soon: true },
   },
   {
     feature: 'Live alerts',
     standard: { kind: 'bool', value: false },
-    premium: { kind: 'bool', value: true },
-    gold: { kind: 'bool', value: true },
+    premium: { kind: 'bool', value: true, coming_soon: true },
+    gold: { kind: 'bool', value: true, coming_soon: true },
   },
   {
     feature: 'Lower penalty',
     standard: { kind: 'bool', value: false },
-    premium: { kind: 'bool', value: true },
-    gold: { kind: 'bool', value: true },
+    premium: { kind: 'bool', value: true, coming_soon: true },
+    gold: { kind: 'bool', value: true, coming_soon: true },
   },
   {
     feature: 'Priority spots',
     standard: { kind: 'bool', value: false },
     premium: { kind: 'bool', value: false },
-    gold: { kind: 'bool', value: true },
+    gold: { kind: 'bool', value: true, coming_soon: true },
   },
   {
     feature: 'Guest booking',
     standard: { kind: 'bool', value: false },
     premium: { kind: 'bool', value: false },
-    gold: { kind: 'bool', value: true },
+    gold: { kind: 'bool', value: true, coming_soon: true },
   },
 ];
-
 function CompareCell({ cell }) {
   if (cell.kind === 'text') {
-    return <span className="subscribtion-compare-text">{cell.value}</span>;
+    return (
+      <span className="subscribtion-compare-text">
+        {cell.value}
+        {cell.coming_soon && <span className="subscribtion-coming-soon"> (Coming Soon)</span>}
+      </span>
+    );
   }
   return (
     <span
@@ -107,13 +119,67 @@ function CompareCell({ cell }) {
           : 'subscribtion-compare-icon subscribtion-compare-icon--no'
       }
       aria-label={cell.value ? 'Included' : 'Not included'}
+      title={cell.coming_soon ? 'Coming Soon' : ''}
     >
       {cell.value ? '✓' : '✗'}
+      {cell.coming_soon && <span className="subscribtion-coming-soon-badge"> (Soon)</span>}
     </span>
   );
 }
 
 export default function Subscribtion() {
+  const [currentPlan, setCurrentPlan] = useState('standard');
+  const navigate = useNavigate();
+
+  // Fetch current subscription on mount
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/protected/subscription/current`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentPlan(data.plan || 'standard');
+        }
+      } catch (err) {
+        console.error("Failed to fetch subscription:", err);
+      }
+    };
+    fetchSubscription();
+  }, []);
+
+  const handleUpgradeClick = async (planId) => {
+    if (planId === currentPlan) {
+      alert(`You are already on the ${planId} plan`);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/protected/subscription/upgrade`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ plan: planId }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentPlan(planId);
+        alert(`Successfully upgraded to ${planId} plan! You now get ${data.discount}% discount.`);
+      } else {
+        const err = await res.json();
+        alert(`Upgrade failed: ${err.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error("Upgrade failed:", err);
+      alert('Upgrade failed. Please try again.');
+    }
+  };
   return (
     <div className="subscribtion-page">
       <header className="subscribtion-hero">
@@ -125,7 +191,16 @@ export default function Subscribtion() {
 
       <div className="subscribtion-grid">
         {TIERS.map((tier) => (
-          <PricingCard key={tier.id} tier={tier} />
+          <PricingCard
+            key={tier.id}
+            tier={{
+              ...tier,
+              ctaLabel: tier.id === currentPlan ? 'Current plan' : tier.ctaLabel,
+              ctaCurrent: tier.id === currentPlan,
+            }}
+            onCtaClick={() => handleUpgradeClick(tier.id)}
+            isDisabled={tier.id === currentPlan}
+          />
         ))}
       </div>
 

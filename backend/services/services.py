@@ -1,4 +1,4 @@
-from repositories.repositories import UserRepository, BookingRepository, VehicleRepository, SlotRepository, OccupancyLogRepository
+from repositories.repositories import UserRepository, BookingRepository, SubscriptionRepository, VehicleRepository, SlotRepository, OccupancyLogRepository
 from model import User, Vehicle, Slot, Booking, OccupancyLog
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token
@@ -66,6 +66,7 @@ class BookingService:
         self.vehicle_repo = VehicleRepository()
         self.slot_repo = SlotRepository()
         self.occupancy_repo = OccupancyLogRepository()
+        self.subscription_repo = SubscriptionRepository()
 
     def create_booking(self, email: str, data: dict):
         user = self.user_repo.get_by_email(email)
@@ -75,8 +76,9 @@ class BookingService:
         time_start = datetime.fromisoformat(data["timeStart"])
         time_end = datetime.fromisoformat(data["timeEnd"])
 
-        # WHY: Reuse existing availability query — if slot not in available
-        # results for this window, it's already taken
+        if time_start >= time_end:
+            return {"error": "invalid time"}, 400
+
         available_slots = self.slot_repo.get_available_in_window(time_start, time_end)
         available_ids = [s.slotId for s in available_slots]
         if data["slotId"] not in available_ids:
@@ -102,8 +104,24 @@ class BookingService:
             recorded_at=datetime.now() 
         )
         self.occupancy_repo.save(new_log)
+        subscription = self.subscription_repo.get_by_customer(user.customerId)
+        
+        discount = 0
+        if subscription and subscription.is_active:
+            discount_map = {"standard": 0, "premium": 10, "gold": 20}
+            discount = discount_map.get(subscription.plan, 0)
 
-        return {"message": "Booking created."}, 201
+        duration_hours = (time_end - time_start).total_seconds() / 3600
+        base_price = duration_hours * 8  # $8 per hour
+        price_after_discount = base_price * (1 - discount / 100)
+
+        return {
+            "message": "Booking created.",
+            "bookingId": booking.bookingId,
+            "basePrice": round(base_price, 2),
+            "discount": discount,
+            "finalPrice": round(price_after_discount, 2)
+        }, 201
     
     def cancel_booking(self, email: str, booking_id: int):
         user = self.user_repo.get_by_email(email)
@@ -326,125 +344,6 @@ class SlotService:
             "slots": slots_snapshot
         }, 200
 
-# class DetectionService:
-#     def __init__(self, model, ocr):
-#         self.model = model
-#         self.ocr = ocr
-#         self.vehicle_repo = VehicleRepository()
-#         self.booking_repo = BookingRepository()
-#         self.slot_repo = SlotRepository()
-#         self.occupancy_repo = OccupancyLogRepository()
-
-#     def plate_normalisation(self, plate_text: str) -> str:
-#         return plate_text.upper().replace(" ", "").replace("-", "")
-
-#     def _log(self, slot_id, status, license_plate=None):
-#         log = OccupancyLog(
-#             slotId = slot_id,
-#             status = status,
-#             licensePlate=license_plate 
-#         )
-#         self.occupancy_repo.save(log)
-#         return log
-    
-#     def detect_plate(self, image_np):
-#         results = self.model(image_np)
-#         result = results[0]
-
-#         if len(result.boxes) != 0:
-#             x1, y1, x2, y2 = result.boxes.xyxy[0].cpu().numpy().astype(int)
-#             plate = image_np[y1:y2, x1:x2]
-#             ocr_result = self.ocr.ocr(plate, cls=True)
-
-#             if ocr_result and ocr_result[0]:
-#                 plate_text = " ".join([line[1][0] for line in ocr_result[0]])
-#                 print(self.plate_normalisation(plate_text))
-#                 return self.plate_normalisation(plate_text)  
-        
-#         return None
-    
-#     def verify_entry(self, image_np):
-#         plate_text = self.detect_plate(image_np)
-#         if plate_text:
-#             vehicle = self.vehicle_repo.get_by_plate(plate_text)
-#             if not vehicle:
-#                 return {"message": "Access Denied"}, 200
-
-#             now = datetime.now()
-#             active_booking = self.booking_repo.get_active_booking_by_plate(plate_text, now)
-#             if not active_booking:
-#                 return {"message": "Access Denied — No Active Booking"}, 200
-
-#             self._log(slot_id=0, status="occupied", license_plate=plate_text)
-#             return {"message": "Access Granted"}, 200
-#         return {"message": "No Car Detected"}, 200
-
-#     def verify_exit(self, image_np):
-#         plate_text = self.detect_plate(image_np)
-#         if plate_text:
-#             vehicle = self.vehicle_repo.get_by_plate(plate_text)
-#             if vehicle:
-#                 now = datetime.now()
-#                 completed_booking = self.booking_repo.get_active_booking_by_plate(plate_text, now)
-#                 if completed_booking:
-#                     completed_booking.status = "completed"
-#                     self.booking_repo.commit()
-#                 self._log(slot_id=0, status="available", license_plate=plate_text)
-#                 return {"message": "Exit Granted"}, 200
-#             return {"message": "Exit Denied"}, 200
-#         return {"message": "No Car Detected"}, 200
-
-
-#     def verify_slot(self, image_np, slotId):
-#         plate_text = self.detect_plate(image_np)
-#         now = datetime.now()
-
-#         slot = self.slot_repo.get_by_id(slotId)
-#         if not slot:
-#             return {"message": "Slot not found"}, 404
-
-#         if plate_text:
-#             curr_booking = self.booking_repo.get_active_by_slot_now(slotId, now)
-
-#             if curr_booking is None:
-#                 # Unauthorised car — don't mark as occupied
-#                 self._log(slot_id=slotId, status="occupied", license_plate=plate_text)
-#                 slot.status = "occupied"
-#                 self.slot_repo.commit()
-#                 return {"message": "No Booking But Car Detected"}, 200
-
-#             elif curr_booking.licensePlate != plate_text:
-#                 # Wrong car — don't mark this slot occupied
-#                 self._log(slot_id=slotId, status="occupied", license_plate=plate_text)
-#                 slot.status = "occupied"
-#                 self.slot_repo.commit()
-#                 return {"message": "Parking in Wrong Spot"}, 200
-
-#             else:
-#                 # Correct car — now it's safe to mark occupied
-#                 slot.status = "occupied"
-#                 self.slot_repo.commit()
-#                 curr_booking.status = "occupied"
-#                 self.booking_repo.commit()
-#                 self._log(slot_id=slotId, status="occupied", license_plate=plate_text)
-#                 return {"message": "Correct Parking"}, 200
-
-#         else:
-#             curr_booking = self.booking_repo.get_active_by_slot_now(slotId, now)
-#             if curr_booking is None:
-#                 self._log(slot_id=slotId, status="available", license_plate=None)
-#                 slot.status = "available"
-#             else:
-#                 # slot.status = "reserved"
-#                 # self._log(slot_id=slotId, status="reserved", license_plate=curr_booking.licensePlate)
-#                 slot.status = "reserved"
-#                 curr_booking.status = "active"
-#                 self.booking_repo.commit()
-#                 self._log(slot_id=slotId, status="vacated", license_plate=curr_booking.licensePlate)
-#             self.slot_repo.commit()
-#             # self._log(slot_id=0, status="occupied", license_plate=plate_text)
-#             return {"message": "No Car Detected"}, 200
-
 class AnalyticService:
     def __init__(self):
         self.occupancy_repo = OccupancyLogRepository()
@@ -665,3 +564,151 @@ class PredictionService:
             "sufficient_data": self._model is not None
         }, 200
 
+class SubscriptionService:
+    def __init__(self):
+        self.subscription_repo = SubscriptionRepository()
+        self.user_repo = UserRepository()
+
+    def get_user_subscription(self, email: str):
+        user = self.user_repo.get_by_email(email)
+        if not user:
+            return {"error": "User not found"}, 404
+        
+        subscription = self.subscription_repo.get_by_customer(user.customerId)
+        
+        if not subscription or not subscription.is_active:
+            return {
+                "plan": "standard",
+                "is_active": False,
+                "discount": 0
+            }, 200
+        
+        discount_map = {"standard": 0, "premium": 10, "gold": 20}
+        
+        return {
+            "plan": subscription.plan,
+            "is_active": subscription.is_active,
+            "discount": discount_map.get(subscription.plan, 0),
+            "start_date": subscription.start_date.isoformat() if subscription.start_date else None
+        }, 200
+
+    def upgrade_subscription(self, email: str, plan: str):
+        valid_plans = ["standard", "premium", "gold"]
+        if plan not in valid_plans:
+            return {"error": f"Invalid plan. Must be one of {valid_plans}"}, 400
+        
+        user = self.user_repo.get_by_email(email)
+        if not user:
+            return {"error": "User not found"}, 404
+        
+        subscription = self.subscription_repo.create_or_update(user.customerId, plan)
+        
+        discount_map = {"standard": 0, "premium": 10, "gold": 20}
+        
+        return {
+            "message": f"Subscription upgraded to {plan}",
+            "plan": subscription.plan,
+            "discount": discount_map.get(subscription.plan, 0)
+        }, 201
+
+    def cancel_subscription(self, email: str):
+        user = self.user_repo.get_by_email(email)
+        if not user:
+            return {"error": "User not found"}, 404
+        
+        subscription = self.subscription_repo.cancel(user.customerId)
+        
+        if not subscription:
+            return {"error": "No active subscription to cancel"}, 404
+        
+        return {"message": "Subscription cancelled"}, 200
+
+class RecommendationService:
+    def __init__(self):
+        self.slot_repo = SlotRepository()
+        self.booking_repo = BookingRepository()
+        self.occupancy_repo = OccupancyLogRepository()
+
+    def get_recommendations(self, time_start, time_end):
+        """
+        Returns smart recommendations:
+        - nearest_zone: first alphabetically available zone
+        - least_congested_zone: zone with lowest occupancy rate
+        - best_availability_zone: zone with most available slots
+        """
+        all_slots = self.slot_repo.get_all()
+        available_slots = self.slot_repo.get_available_in_window(time_start, time_end)
+        available_ids = [s.slotId for s in available_slots]
+        
+        # Group by zone
+        zone_stats = {}
+        for slot in all_slots:
+            zone = slot.zoneName
+            if zone not in zone_stats:
+                zone_stats[zone] = {
+                    "total": 0,
+                    "available": 0,
+                    "occupied": 0,
+                }
+            zone_stats[zone]["total"] += 1
+            
+            if slot.slotId in available_ids:
+                zone_stats[zone]["available"] += 1
+            else:
+                zone_stats[zone]["occupied"] += 1
+        
+        if not zone_stats:
+            return {"error": "No zones available"}, 400
+        
+        # Calculate recommendations
+        zone_names = sorted(zone_stats.keys())  # A, B, C, D, E
+        nearest_zone = zone_names[0]  # First alphabetically
+        
+        # Least congested = lowest occupancy rate
+        least_congested = min(
+            zone_stats.keys(),
+            key=lambda z: zone_stats[z]["occupied"] / zone_stats[z]["total"]
+            if zone_stats[z]["total"] > 0 else 0
+        )
+        
+        # Best availability = most available slots
+        best_availability = max(
+            zone_stats.keys(),
+            key=lambda z: zone_stats[z]["available"]
+        )
+        
+        # Build response
+        zone_map = {
+            "nearest_zone": nearest_zone,
+            "least_congested_zone": least_congested,
+            "best_availability_zone": best_availability,
+        }
+        
+        recommendations = {}
+        for key, zone in zone_map.items():
+            stats = zone_stats[zone]
+            availability_pct = (stats["available"] / stats["total"] * 100) if stats["total"] > 0 else 0
+            
+            recommendations[key] = {
+                "zone": zone,
+                "total_slots": stats["total"],
+                "available_slots": stats["available"],
+                "occupied_slots": stats["occupied"],
+                "availability_percentage": round(availability_pct, 1),
+                "occupancy_percentage": round(100 - availability_pct, 1),
+            }
+        
+        return {
+            "recommendations": recommendations,
+            "all_zone_stats": {
+                zone: {
+                    "total": zone_stats[zone]["total"],
+                    "available": zone_stats[zone]["available"],
+                    "occupied": zone_stats[zone]["occupied"],
+                    "availability_percentage": round(
+                        zone_stats[zone]["available"] / zone_stats[zone]["total"] * 100, 1
+                    )
+                }
+                for zone in zone_stats
+            }
+        }, 200

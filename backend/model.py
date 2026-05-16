@@ -4,7 +4,7 @@ Create SQL table
 Reference: 
 """
 
-from sqlalchemy import Integer, String, DateTime
+from sqlalchemy import Integer, String, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 from database import db
 from datetime import datetime, timezone
@@ -42,16 +42,16 @@ class Booking(db.Model):
     licensePlate: Mapped[int]
     timeStart = mapped_column(DateTime(timezone=True))
     timeEnd = mapped_column(DateTime(timezone=True))
-    status: Mapped[str] = mapped_column(default="active")
+    status: Mapped[str] = mapped_column(default="active")  # active, expired, completed, cancelled
 
-# class Subscription(db.Model):
-#     subscriptionId: Mapped[int] = mapped_column(primary_key=True)
-#     customerId: Mapped[int]
-#     plan: Mapped[str]               # "basic" | "premium" | "enterprise"
-#     max_bookings: Mapped[int] = mapped_column(default=2)
-#     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-#     start_date = mapped_column(DateTime(timezone=True))
-#     end_date = mapped_column(DateTime(timezone=True))
+class Subscription(db.Model):
+    subscriptionId: Mapped[int] = mapped_column(primary_key=True)
+    customerId: Mapped[int] = mapped_column(unique=True)
+    plan: Mapped[str]  # "standard" | "premium" | "gold"
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    start_date = mapped_column(DateTime(timezone=True), default=lambda: datetime.now())
+    end_date = mapped_column(DateTime(timezone=True), nullable=True)
+
 
 class OccupancyLog(db.Model):
     logId: Mapped[int] = mapped_column(primary_key=True)

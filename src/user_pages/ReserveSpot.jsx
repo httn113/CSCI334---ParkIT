@@ -54,6 +54,9 @@ export default function ReserveSpot() {
   const [slotId, setSlotId] = useState('')
   const navigate = useNavigate();
 
+  const [subscription, setSubscription] = useState({ plan: "standard", discount: 0 });
+
+
   const minDate = useMemo(() => ymd(0), []);
   const defaultFutureDate = useMemo(() => ymd(1), []);
 
@@ -78,6 +81,26 @@ export default function ReserveSpot() {
   const [formErrors, setFormErrors] = useState({ plate: '', start: '', end: '', general: '' });
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmed, setConfirmed] = useState(null);
+
+  // Fetch user subscription on component mount
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const res = await fetch(`${ENDPOINT}/protected/subscription/current`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSubscription(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch subscription:", err);
+      }
+    };
+    fetchSubscription();
+  }, []);
 
   // Fetch saved plates and derive car types + colors from the response
   useEffect(() => {
@@ -234,7 +257,11 @@ export default function ReserveSpot() {
   const totalMs = confirmed ? confirmed.endAt.getTime() - confirmed.startAt.getTime() : 0;
   const totalMinutes = Math.max(0, Math.floor(totalMs / 60_000));
   const totalTimeLabel = formatDurationFromMinutes(totalMinutes);
-  const priceTotal = (totalMs / 3_600_000) * PRICE_PER_HOUR_USD;
+
+  const basePrice = (totalMs / 3_600_000) * PRICE_PER_HOUR_USD;
+  const discountAmount = basePrice * (subscription.discount / 100);
+  const priceTotal = basePrice - discountAmount;
+
 
   return (
     <div
@@ -242,6 +269,15 @@ export default function ReserveSpot() {
       aria-label={spotId ? `Reserve spot ${spotId}` : 'Reserve spot'}
     >
       <h1 className="fp-heading">Spot {spotId ?? '—'}</h1>
+
+      {/* Show subscription discount info */}
+      {subscription.discount > 0 && (
+        <div className="rs-discount-banner" style={{ padding: '10px', marginBottom: '15px', backgroundColor: '#e8f5e9', borderRadius: '8px', border: '1px solid #4caf50' }}>
+          <p style={{ margin: 0, color: '#2e7d32', fontWeight: 'bold' }}>
+            ✓ {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)} subscriber: {subscription.discount}% discount applied!
+          </p>
+        </div>
+      )}
 
       {!showConfirmation && (
         <GlassCard className="rs-form-card">
@@ -426,6 +462,24 @@ export default function ReserveSpot() {
             </div>
           </dl>
           <p className="rs-rate-hint">Rate: {formatMoney(PRICE_PER_HOUR_USD)} / hour (mock)</p>
+          
+          <div className="rs-price-section">
+            <div className="rs-price-row">
+              <span>Base Price ({totalTimeLabel}):</span>
+              <span>{formatMoney(basePrice)}</span>
+            </div>
+            {subscription.discount > 0 && (
+              <div className="rs-price-row rs-discount-row">
+                <span>{subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)} Discount ({subscription.discount}%):</span>
+                <span style={{ color: '#4caf50', fontWeight: 'bold' }}>-{formatMoney(discountAmount)}</span>
+              </div>
+            )}
+            <div className="rs-price-row rs-total-row">
+              <span>Total Price:</span>
+              <span>{formatMoney(priceTotal)}</span>
+            </div>
+          </div>
+          
           <div className="rs-confirm-actions">
             <button type="button" className="rs-btn rs-btn--pay" onClick={handlePayment}>
               Accept and Pay
