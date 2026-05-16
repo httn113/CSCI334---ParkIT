@@ -9,6 +9,7 @@ import Modal from '../components/Modal';
 import QuickActionCard from '../components/QuickActionCard';
 
 const ENDPOINT = import.meta.env.VITE_API_URL;
+const AI_ENDPOINT = import.meta.env.VITE_API_AI_URL;
 
 const MODES = [
   { id: 'entry', label: 'Entry gate' },
@@ -20,19 +21,19 @@ const MODE_META = {
   entry: {
     title: 'Entry gate detection',
     subtitle: 'Upload a photo of the vehicle at the entry gate. The system will read the plate and grant or deny access.',
-    endpoint: '/auth/test/entryDetection',
+    verifyEndpoint: 'auth/parking/entry',
     needsSlot: false,
   },
   exit: {
     title: 'Exit gate detection',
     subtitle: 'Upload a photo of the vehicle at the exit gate. The system will log the departure.',
-    endpoint: '/auth/test/exitDetection',
+    verifyEndpoint: 'auth/parking/exit',
     needsSlot: false,
   },
   slot: {
     title: 'Slot detection',
     subtitle: 'Upload a photo of a parking slot and enter the slot ID. The system checks whether the vehicle matches the active booking.',
-    endpoint: '/auth/test/slotDetection',
+    verifyEndpoint: 'auth/parking/slot',
     needsSlot: true,
   },
 };
@@ -130,18 +131,55 @@ export default function AICamera() {
     setLoading(true);
     setResult(null);
 
-    const form = new FormData();
-    form.append('file', file);
-    if (meta.needsSlot) form.append('id', slotId.trim());
-
     try {
-      const res = await fetch(`${ENDPOINT}/analytics/predict`, {
+      // STEP 1: Detect license plate from image
+      const form = new FormData();
+      form.append('file', file);
+
+      const detectRes = await fetch(`${AI_ENDPOINT}/ai/detect`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
         body: form,
       });
-      const data = await res.json();
-      const msg = data.message || data.error || 'Unknown response';
+
+      if (!detectRes.ok) {
+        setResult('Detection failed');
+        setLoading(false);
+        return;
+      }
+
+      const detectData = await detectRes.json();
+      const plate = detectData.licensePlate;
+
+      if (!plate) {
+        setResult('No Car Detected');
+        setLog(prev => [{
+          id: Date.now(),
+          mode: MODES.find(m => m.id === mode)?.label,
+          message: 'No Car Detected',
+          time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+        }, ...prev].slice(0, 20));
+        setLoading(false);
+        return;
+      }
+
+      // STEP 2: Verify with parking service
+      const verifyBody = { licensePlate: plate };
+      if (meta.needsSlot) {
+        verifyBody.slotId = parseInt(slotId.trim());
+      }
+
+      const verifyRes = await fetch(`${ENDPOINT}/${meta.verifyEndpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify(verifyBody),
+      });
+
+      const verifyData = await verifyRes.json();
+      const msg = verifyData.message || verifyData.error || 'Unknown response';
+
       setResult(msg);
       setLog(prev => [{
         id: Date.now(),
@@ -150,7 +188,8 @@ export default function AICamera() {
         time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
         ...(meta.needsSlot && { slotId }),
       }, ...prev].slice(0, 20));
-    } catch {
+    } catch (err) {
+      console.error(err);
       setResult('Request failed');
     }
     setLoading(false);

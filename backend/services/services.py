@@ -3,12 +3,9 @@ from model import User, Vehicle, Slot, Booking, OccupancyLog
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token
 from datetime import datetime
-from ultralytics import YOLO
-from paddleocr import PaddleOCR
 from collections import defaultdict
 from sklearn.ensemble import RandomForestRegressor
 import numpy as np
-from datetime import timedelta
 
 class UserService:
     def __init__(self):
@@ -329,124 +326,124 @@ class SlotService:
             "slots": slots_snapshot
         }, 200
 
-class DetectionService:
-    def __init__(self, model, ocr):
-        self.model = model
-        self.ocr = ocr
-        self.vehicle_repo = VehicleRepository()
-        self.booking_repo = BookingRepository()
-        self.slot_repo = SlotRepository()
-        self.occupancy_repo = OccupancyLogRepository()
+# class DetectionService:
+#     def __init__(self, model, ocr):
+#         self.model = model
+#         self.ocr = ocr
+#         self.vehicle_repo = VehicleRepository()
+#         self.booking_repo = BookingRepository()
+#         self.slot_repo = SlotRepository()
+#         self.occupancy_repo = OccupancyLogRepository()
 
-    def plate_normalisation(self, plate_text: str) -> str:
-        return plate_text.upper().replace(" ", "").replace("-", "")
+#     def plate_normalisation(self, plate_text: str) -> str:
+#         return plate_text.upper().replace(" ", "").replace("-", "")
 
-    def _log(self, slot_id, status, license_plate=None):
-        log = OccupancyLog(
-            slotId = slot_id,
-            status = status,
-            licensePlate=license_plate 
-        )
-        self.occupancy_repo.save(log)
-        return log
+#     def _log(self, slot_id, status, license_plate=None):
+#         log = OccupancyLog(
+#             slotId = slot_id,
+#             status = status,
+#             licensePlate=license_plate 
+#         )
+#         self.occupancy_repo.save(log)
+#         return log
     
-    def detect_plate(self, image_np):
-        results = self.model(image_np)
-        result = results[0]
+#     def detect_plate(self, image_np):
+#         results = self.model(image_np)
+#         result = results[0]
 
-        if len(result.boxes) != 0:
-            x1, y1, x2, y2 = result.boxes.xyxy[0].cpu().numpy().astype(int)
-            plate = image_np[y1:y2, x1:x2]
-            ocr_result = self.ocr.ocr(plate, cls=True)
+#         if len(result.boxes) != 0:
+#             x1, y1, x2, y2 = result.boxes.xyxy[0].cpu().numpy().astype(int)
+#             plate = image_np[y1:y2, x1:x2]
+#             ocr_result = self.ocr.ocr(plate, cls=True)
 
-            if ocr_result and ocr_result[0]:
-                plate_text = " ".join([line[1][0] for line in ocr_result[0]])
-                print(self.plate_normalisation(plate_text))
-                return self.plate_normalisation(plate_text)  
+#             if ocr_result and ocr_result[0]:
+#                 plate_text = " ".join([line[1][0] for line in ocr_result[0]])
+#                 print(self.plate_normalisation(plate_text))
+#                 return self.plate_normalisation(plate_text)  
         
-        return None
+#         return None
     
-    def verify_entry(self, image_np):
-        plate_text = self.detect_plate(image_np)
-        if plate_text:
-            vehicle = self.vehicle_repo.get_by_plate(plate_text)
-            if not vehicle:
-                return {"message": "Access Denied"}, 200
+#     def verify_entry(self, image_np):
+#         plate_text = self.detect_plate(image_np)
+#         if plate_text:
+#             vehicle = self.vehicle_repo.get_by_plate(plate_text)
+#             if not vehicle:
+#                 return {"message": "Access Denied"}, 200
 
-            now = datetime.now()
-            active_booking = self.booking_repo.get_active_booking_by_plate(plate_text, now)
-            if not active_booking:
-                return {"message": "Access Denied — No Active Booking"}, 200
+#             now = datetime.now()
+#             active_booking = self.booking_repo.get_active_booking_by_plate(plate_text, now)
+#             if not active_booking:
+#                 return {"message": "Access Denied — No Active Booking"}, 200
 
-            self._log(slot_id=0, status="occupied", license_plate=plate_text)
-            return {"message": "Access Granted"}, 200
-        return {"message": "No Car Detected"}, 200
+#             self._log(slot_id=0, status="occupied", license_plate=plate_text)
+#             return {"message": "Access Granted"}, 200
+#         return {"message": "No Car Detected"}, 200
 
-    def verify_exit(self, image_np):
-        plate_text = self.detect_plate(image_np)
-        if plate_text:
-            vehicle = self.vehicle_repo.get_by_plate(plate_text)
-            if vehicle:
-                now = datetime.now()
-                completed_booking = self.booking_repo.get_active_booking_by_plate(plate_text, now)
-                if completed_booking:
-                    completed_booking.status = "completed"
-                    self.booking_repo.commit()
-                self._log(slot_id=0, status="available", license_plate=plate_text)
-                return {"message": "Exit Granted"}, 200
-            return {"message": "Exit Denied"}, 200
-        return {"message": "No Car Detected"}, 200
+#     def verify_exit(self, image_np):
+#         plate_text = self.detect_plate(image_np)
+#         if plate_text:
+#             vehicle = self.vehicle_repo.get_by_plate(plate_text)
+#             if vehicle:
+#                 now = datetime.now()
+#                 completed_booking = self.booking_repo.get_active_booking_by_plate(plate_text, now)
+#                 if completed_booking:
+#                     completed_booking.status = "completed"
+#                     self.booking_repo.commit()
+#                 self._log(slot_id=0, status="available", license_plate=plate_text)
+#                 return {"message": "Exit Granted"}, 200
+#             return {"message": "Exit Denied"}, 200
+#         return {"message": "No Car Detected"}, 200
 
 
-    def verify_slot(self, image_np, slotId):
-        plate_text = self.detect_plate(image_np)
-        now = datetime.now()
+#     def verify_slot(self, image_np, slotId):
+#         plate_text = self.detect_plate(image_np)
+#         now = datetime.now()
 
-        slot = self.slot_repo.get_by_id(slotId)
-        if not slot:
-            return {"message": "Slot not found"}, 404
+#         slot = self.slot_repo.get_by_id(slotId)
+#         if not slot:
+#             return {"message": "Slot not found"}, 404
 
-        if plate_text:
-            curr_booking = self.booking_repo.get_active_by_slot_now(slotId, now)
+#         if plate_text:
+#             curr_booking = self.booking_repo.get_active_by_slot_now(slotId, now)
 
-            if curr_booking is None:
-                # Unauthorised car — don't mark as occupied
-                self._log(slot_id=slotId, status="occupied", license_plate=plate_text)
-                slot.status = "occupied"
-                self.slot_repo.commit()
-                return {"message": "No Booking But Car Detected"}, 200
+#             if curr_booking is None:
+#                 # Unauthorised car — don't mark as occupied
+#                 self._log(slot_id=slotId, status="occupied", license_plate=plate_text)
+#                 slot.status = "occupied"
+#                 self.slot_repo.commit()
+#                 return {"message": "No Booking But Car Detected"}, 200
 
-            elif curr_booking.licensePlate != plate_text:
-                # Wrong car — don't mark this slot occupied
-                self._log(slot_id=slotId, status="occupied", license_plate=plate_text)
-                slot.status = "occupied"
-                self.slot_repo.commit()
-                return {"message": "Parking in Wrong Spot"}, 200
+#             elif curr_booking.licensePlate != plate_text:
+#                 # Wrong car — don't mark this slot occupied
+#                 self._log(slot_id=slotId, status="occupied", license_plate=plate_text)
+#                 slot.status = "occupied"
+#                 self.slot_repo.commit()
+#                 return {"message": "Parking in Wrong Spot"}, 200
 
-            else:
-                # Correct car — now it's safe to mark occupied
-                slot.status = "occupied"
-                self.slot_repo.commit()
-                curr_booking.status = "occupied"
-                self.booking_repo.commit()
-                self._log(slot_id=slotId, status="occupied", license_plate=plate_text)
-                return {"message": "Correct Parking"}, 200
+#             else:
+#                 # Correct car — now it's safe to mark occupied
+#                 slot.status = "occupied"
+#                 self.slot_repo.commit()
+#                 curr_booking.status = "occupied"
+#                 self.booking_repo.commit()
+#                 self._log(slot_id=slotId, status="occupied", license_plate=plate_text)
+#                 return {"message": "Correct Parking"}, 200
 
-        else:
-            curr_booking = self.booking_repo.get_active_by_slot_now(slotId, now)
-            if curr_booking is None:
-                self._log(slot_id=slotId, status="available", license_plate=None)
-                slot.status = "available"
-            else:
-                # slot.status = "reserved"
-                # self._log(slot_id=slotId, status="reserved", license_plate=curr_booking.licensePlate)
-                slot.status = "reserved"
-                curr_booking.status = "active"
-                self.booking_repo.commit()
-                self._log(slot_id=slotId, status="vacated", license_plate=curr_booking.licensePlate)
-            self.slot_repo.commit()
-            # self._log(slot_id=0, status="occupied", license_plate=plate_text)
-            return {"message": "No Car Detected"}, 200
+#         else:
+#             curr_booking = self.booking_repo.get_active_by_slot_now(slotId, now)
+#             if curr_booking is None:
+#                 self._log(slot_id=slotId, status="available", license_plate=None)
+#                 slot.status = "available"
+#             else:
+#                 # slot.status = "reserved"
+#                 # self._log(slot_id=slotId, status="reserved", license_plate=curr_booking.licensePlate)
+#                 slot.status = "reserved"
+#                 curr_booking.status = "active"
+#                 self.booking_repo.commit()
+#                 self._log(slot_id=slotId, status="vacated", license_plate=curr_booking.licensePlate)
+#             self.slot_repo.commit()
+#             # self._log(slot_id=0, status="occupied", license_plate=plate_text)
+#             return {"message": "No Car Detected"}, 200
 
 class AnalyticService:
     def __init__(self):

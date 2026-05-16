@@ -1,24 +1,10 @@
-from model import User, Vehicle, Slot, Booking
 from flask import Blueprint, request, jsonify
 from database import db
-import json
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token
-from sqlalchemy import delete
-from datetime import datetime, timedelta, timezone
-import numpy as np
-from PIL import Image
-import io
-from ultralytics import YOLO
-from paddleocr import PaddleOCR
-from services.services import UserService, DetectionService, AnalyticService
-
-model = YOLO("https://huggingface.co/Koushim/yolov8-license-plate-detection/resolve/main/best.pt")
-ocr = PaddleOCR(use_angle_cls=True, lang='en')
+from services.services import UserService
+from services.parking_service import ParkingService
 
 user_service = UserService()
-detection_service = DetectionService(model, ocr)
-analytics_service = AnalyticService()
+parking_service = ParkingService()
 
 """
 Better API path organising using Blueprint
@@ -46,35 +32,26 @@ def signIn():
     result, status = user_service.authenticate(request.json)
     return jsonify(result), status
 
-
-@authentication.route("/test/entryDetection", methods=["POST"])
-def entryDetection():
-    file = request.files.get('file')
-    data = file.read()
-    image = Image.open(io.BytesIO(data))
-    image_np = np.array(image, dtype=np.uint8)
-
-    result, status = detection_service.verify_entry(image_np)
+@authentication.route("/parking/entry", methods=["POST"])
+def parking_entry():
+    data = request.get_json() or {}
+    plate = data.get("licensePlate")
+    result, status = parking_service.verify_entry_by_plate(plate)
     return jsonify(result), status
 
-
-@authentication.route("/test/exitDetection", methods=["POST"])
-def exitDetection():
-    file = request.files.get('file')
-    data = file.read()
-    image = Image.open(io.BytesIO(data))
-    image_np = np.array(image, dtype=np.uint8)
-
-    result, status = detection_service.verify_exit(image_np)
+@authentication.route("/parking/exit", methods=["POST"])
+def parking_exit():
+    data = request.get_json() or {}
+    plate = data.get("licensePlate")
+    result, status = parking_service.verify_exit_by_plate(plate)
     return jsonify(result), status
 
-@authentication.route("/test/slotDetection", methods=["POST"])
-def slotDetection():
-    file = request.files.get('file')
-    slotId = int(request.form.get('id'))
-    data = file.read()
-    image = Image.open(io.BytesIO(data))
-    image_np = np.array(image, dtype=np.uint8)
-
-    result, status = detection_service.verify_slot(image_np, slotId)
+@authentication.route("/parking/slot", methods=["POST"])
+def parking_slot():
+    data = request.get_json() or {}
+    plate = data.get("licensePlate")
+    slotId = data.get("slotId")
+    if slotId is None:
+        return jsonify({"error": "slotId required"}), 400
+    result, status = parking_service.verify_slot_by_plate(plate, int(slotId))
     return jsonify(result), status

@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    libxcb1 \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.ai.txt ./requirements.ai.txt
+RUN pip install --no-cache-dir -r requirements.ai.txt
+
+COPY ai_app.py ./ai_app.py
+COPY services/detection_service.py ./services/detection_service.py
+COPY services ./services
+
+EXPOSE 5000
+CMD ["python", "ai_app.py"]

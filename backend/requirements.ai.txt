@@ -1,0 +1,10 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+flask
+ultralytics
+torch
+easyocr
+opencv-python-headless
+Pillow
+numpy
+flask_cors
