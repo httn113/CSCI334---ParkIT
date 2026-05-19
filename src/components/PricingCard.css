@@ -198,3 +198,13 @@
   cursor: default;
   pointer-events: none;
 }
+
+.pricing-feature-check {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.pricing-feature-soon {
+  color: #4ade80;
+  font-weight: 600;
+}
