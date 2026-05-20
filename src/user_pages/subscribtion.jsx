@@ -61,12 +61,14 @@ const TIERS = [
 const COMPARISON_ROWS = [
   {
     feature: 'Booking discount',
+    highlightValues: true,
     standard: { kind: 'text', value: 'None' },
     premium: { kind: 'text', value: '10% discount' },
     gold: { kind: 'text', value: '20% discount' },
   },
   {
     feature: 'Max duration',
+    highlightValues: true,
     standard: { kind: 'text', value: '3 hours' },
     premium: { kind: 'text', value: '24 hours', coming_soon: true },
     gold: { kind: 'text', value: 'Unlimited', coming_soon: true },
@@ -102,14 +104,17 @@ const COMPARISON_ROWS = [
     gold: { kind: 'bool', value: true, coming_soon: true },
   },
 ];
-function CompareCell({ cell }) {
+function CompareCell({ cell, highlight }) {
   if (cell.kind === 'text') {
     return (
-      <span className="subscribtion-compare-text">
+      <span className={`subscribtion-compare-text${highlight ? ' subscribtion-compare-text--green' : ''}`}>
         {cell.value}
         {cell.coming_soon && <span className="subscribtion-coming-soon"> (Coming Soon)</span>}
       </span>
     );
+  }
+  if (cell.coming_soon && cell.value) {
+    return <span className="subscribtion-coming-soon-badge">Coming Soon</span>;
   }
   return (
     <span
@@ -119,10 +124,8 @@ function CompareCell({ cell }) {
           : 'subscribtion-compare-icon subscribtion-compare-icon--no'
       }
       aria-label={cell.value ? 'Included' : 'Not included'}
-      title={cell.coming_soon ? 'Coming Soon' : ''}
     >
       {cell.value ? '✓' : '✗'}
-      {cell.coming_soon && <span className="subscribtion-coming-soon-badge"> (Soon)</span>}
     </span>
   );
 }
@@ -226,9 +229,9 @@ export default function Subscribtion() {
                   <th scope="row" className="subscribtion-compare-feature">
                     {row.feature}
                   </th>
-                  <td><CompareCell cell={row.standard} /></td>
-                  <td><CompareCell cell={row.premium} /></td>
-                  <td><CompareCell cell={row.gold} /></td>
+                  <td><CompareCell cell={row.standard} highlight={row.highlightValues} /></td>
+                  <td><CompareCell cell={row.premium} highlight={row.highlightValues} /></td>
+                  <td><CompareCell cell={row.gold} highlight={row.highlightValues} /></td>
                 </tr>
               ))}
             </tbody>
