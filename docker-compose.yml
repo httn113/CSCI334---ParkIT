@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.app
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+
+  ai:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.ai_service
+    ports:
+      - "5010:5000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+      - ai
+    restart: unless-stopped

@@ -21,9 +21,19 @@ export default function PricingCard({ tier, onCtaClick, isDisabled }) {
       )}
 
       <ul className="pricing-features">
-        {tier.features.map((line) => (
-          <li key={line}>{line}</li>
-        ))}
+        {tier.features.map((line) => {
+          const isCheck = line.startsWith('✓');
+          const parts = line.split(/(✓|\(Coming Soon\))/g);
+          return (
+            <li key={line}>
+              {parts.map((part, i) => {
+                if (part === '✓') return <span key={i} className="pricing-feature-check">{part}</span>;
+                if (part === '(Coming Soon)') return <span key={i} className="pricing-feature-soon">{part}</span>;
+                return part;
+              })}
+            </li>
+          );
+        })}
       </ul>
 
       <div className="pricing-card-cta">
