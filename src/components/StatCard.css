@@ -27,6 +27,18 @@
   color: #4ade80;
 }
 
+.stat-card-number.occupied {
+  color: #fbbf24;
+}
+
+.stat-card-number.total {
+  color: #5f9eff;
+}
+
+.stat-card-number.peak {
+  color: #22d3ee;
+}
+
 @media (max-width: 480px) {
   .stat-card {
     padding: 16px 18px;

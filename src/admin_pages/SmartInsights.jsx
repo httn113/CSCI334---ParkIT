@@ -253,23 +253,24 @@ export default function SmartInsights() {
             <StatCard
               label="Occupied now"
               value={now ? `${now.predicted_occupied}${suffix}` : "—"}
-              className="available"
+              colorClass="occupied"
             />
           </div>
           <div className="glass-card si-stat-wrap">
             <StatCard
               label="Available now"
               value={now ? `${now.predicted_available}${suffix}` : "—"}
-              className="available"
+              colorClass="available"
             />
           </div>
           <div className="glass-card si-stat-wrap">
-            <StatCard label="Total slots" value={totalSlots || "—"} />
+            <StatCard label="Total slots" value={totalSlots || "—"} colorClass="total" />
           </div>
           <div className="glass-card si-stat-wrap">
             <StatCard
               label="Peak hour (predicted)"
               value={peak ? peak.label : "—"}
+              colorClass="peak"
             />
           </div>
         </div>
