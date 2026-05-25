@@ -1,53 +1,84 @@
-"""
-WHY: Spec requires 100+ records per data type for the live demo.
-Run with: python seed.py
-"""
 import random
-from datetime import datetime, timezone, timedelta
+from collections import defaultdict
+from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 from app import app
 from database import db
-from model import User, Vehicle, Slot, Booking, OccupancyLog
+from model import User, Vehicle, Slot, Booking, OccupancyLog, Subscription
 from repositories.repositories import UserRepository, VehicleRepository, SlotRepository
 from sqlalchemy import delete
 
-ZONES = ['A', 'B', 'C', 'D', 'E']
-SLOTS_PER_ZONE = 20        # 100 slots total
+ZONES = ["A", "B", "C", "D", "E"]
+SLOTS_PER_ZONE = 20
 NUM_USERS = 100
-NUM_BOOKINGS = 300
-NUM_LOGS = 500
 
 BRANDS = ["Toyota", "Honda", "Mazda", "Ford", "BMW"]
 MODELS = ["Corolla", "Civic", "3", "Ranger", "320i"]
 COLORS = ["White", "Black", "Silver", "Blue", "Red"]
-TYPES  = ["Sedan", "SUV", "Hatchback", "Ute", "Wagon"]
+TYPES = ["Sedan", "SUV", "Hatchback", "Ute", "Wagon"]
+
+BATCH_SIZE = 100
 
 user_repo = UserRepository()
 vehicle_repo = VehicleRepository()
 slot_repo = SlotRepository()
 
+
 def random_plate(used):
     while True:
-        p = ''.join(random.choices('ABCDEFGHJKLMNPRSTUVWXYZ', k=3)) + \
-            ''.join(random.choices('0123456789', k=3))
-        if p not in used:
-            used.add(p)
-            return p
+        plate = "".join(random.choices("ABCDEFGHJKLMNPRSTUVWXYZ", k=3))
+        plate += "".join(random.choices("0123456789", k=3))
+        if plate not in used:
+            used.add(plate)
+            return plate
+
+
+def make_hour_weights(day_of_week: int):
+    if day_of_week < 5:  # Mon-Fri
+        weights = [2] * 24
+        for hour in [7, 8, 9, 10]:
+            weights[hour] = 18
+        for hour in [11, 12, 13, 14]:
+            weights[hour] = 14
+        for hour in [15, 16, 17, 18]:
+            weights[hour] = 16
+        weights[19] = 10
+    else:  # Sat-Sun
+        weights = [1] * 24
+        for hour in [10, 11, 12, 13, 14, 15]:
+            weights[hour] = 10
+        for hour in [16, 17, 18, 19]:
+            weights[hour] = 8
+    return weights
+
+
+def is_slot_available(
+    slot_bookings: dict[int, list[tuple[datetime, datetime]]],
+    slot_id: int,
+    start: datetime,
+    end: datetime,
+) -> bool:
+    """Check in-memory whether a slot is free for the given window."""
+    for existing_start, existing_end in slot_bookings[slot_id]:
+        if start < existing_end and end > existing_start:
+            return False
+    return True
+
 
 def seed():
     with app.app_context():
-        # Clear all tables first
+        # wipe relevant tables
         db.session.execute(delete(OccupancyLog))
         db.session.execute(delete(Booking))
         db.session.execute(delete(Vehicle))
         db.session.execute(delete(Slot))
         db.session.execute(delete(User))
+        db.session.execute(delete(Subscription))
         db.session.commit()
-        print("Cleared existing data")
 
         db.create_all()
 
-        # Slots
+        # create slots
         slots = []
         for zone in ZONES:
             for number in range(1, SLOTS_PER_ZONE + 1):
@@ -55,44 +86,44 @@ def seed():
                 db.session.add(slot)
                 slots.append(slot)
         db.session.commit()
-        print(f"Created {len(slots)} slots")
 
-        # Admin user
+        # admin and kiosk users
         admin = User(
-            customerFName="Admin", customerLName="User",
-            licenseNo="00000000", phone="0400000000",
+            customerFName="Admin",
+            customerLName="User",
+            licenseNo="00000000",
+            phone="0400000000",
             email="admin@parking.com",
             password=generate_password_hash("admin123"),
-            role="admin"
+            role="admin",
         )
-        db.session.add(admin)
-        db.session.commit()
-
         kiosk = User(
-            customerFName="Kiosk", customerLName="User",
-            licenseNo="0100000", phone="0410000000",
+            customerFName="Kiosk",
+            customerLName="User",
+            licenseNo="01000000",
+            phone="0410000000",
             email="kiosk@parking.com",
             password=generate_password_hash("kiosk123"),
-            role="kiosk"
+            role="kiosk",
         )
+        db.session.add(admin)
         db.session.add(kiosk)
         db.session.commit()
 
-        # Regular users + vehicles
+        # create users and vehicles
         used_plates = set()
-        users = []
-        vehicles = []
         for i in range(1, NUM_USERS + 1):
             user = User(
-                customerFName=f"First{i}", customerLName=f"Last{i}",
-                licenseNo=f"{i:08d}", phone=f"04{i:08d}",
+                customerFName=f"First{i}",
+                customerLName=f"Last{i}",
+                licenseNo=f"{i:08d}",
+                phone=f"04{i:08d}",
                 email=f"user{i}@parking.com",
                 password=generate_password_hash("password123"),
-                role="user"
+                role="user",
             )
             db.session.add(user)
             db.session.commit()
-            users.append(user)
 
             vehicle = Vehicle(
                 customerId=user.customerId,
@@ -100,94 +131,148 @@ def seed():
                 color=random.choice(COLORS),
                 brand=random.choice(BRANDS),
                 model=random.choice(MODELS),
-                type=random.choice(TYPES)
+                type=random.choice(TYPES),
             )
             db.session.add(vehicle)
-            vehicles.append(vehicle)
         db.session.commit()
-        print(f"Created {len(users)} users and {len(vehicles)} vehicles")
 
-        # Bookings
+        # reload repository-backed lists
         users = user_repo.get_all()
         vehicles = vehicle_repo.get_all()
         slots = slot_repo.get_all()
 
+        # time window: last 7 days (6 days ago -> today)
         now = datetime.now()
+        week_start = now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=6)
+
+        # occupancy targets
+        total_slots = len(slots)
+        MIN_PCT = 0.10   # min 10% occupancy at low hours
+        PEAK_PCT = 0.50  # max 50% occupancy at peak hours
+
         bookings = []
+        week_end = week_start + timedelta(days=7, hours=23, minutes=59)
 
-        random.shuffle(vehicles)
+        # in-memory conflict index: slotId -> [(start, end), ...]
+        # avoids per-booking DB queries for availability checks
+        slot_bookings: dict[int, list[tuple[datetime, datetime]]] = defaultdict(list)
 
-        for vehicle in vehicles:
-            user = next((u for u in users if u.customerId == vehicle.customerId), None)
-            if not user:
-                continue
+        batch: list[Booking] = []
 
-            days_offset = 0
-            current_hour = now.hour
-            dynamic_weights = [10 if abs(i - current_hour) <= 1 else 1 for i in range(24)]
+        print(f"Seeding bookings for 7 days from {week_start.isoformat()} (total slots: {total_slots})")
 
-            hour = random.choices(
-                range(24),
-                weights=dynamic_weights,
-                k=1
-            )[0]
+        for day_offset in range(7):
+            current_day = week_start + timedelta(days=day_offset)
+            day_of_week = current_day.weekday()
+            hour_weights = make_hour_weights(day_of_week)
 
-            time_start = now.replace(
-                hour=hour,
-                minute=random.randint(0, 59),
-                second=0,
-                microsecond=0
-            ) + timedelta(days=days_offset)
+            min_w = min(hour_weights)
+            max_w = max(hour_weights) or 1
 
-            duration = random.choices([1, 2], weights=[8, 2], k=1)[0]
-            time_end = time_start + timedelta(hours=duration)
+            for hour in range(24):
+                norm = (hour_weights[hour] - min_w) / (max_w - min_w) if max_w > min_w else 0.5
+                target_pct = MIN_PCT + norm * (PEAK_PCT - MIN_PCT)
+                target_count = max(1, round(total_slots * target_pct))
 
-            available_slots = slot_repo.get_available_in_window(time_start, time_end)
-            available_ids = [s.slotId for s in available_slots]
+                created = 0
+                attempts = 0
+                max_attempts = target_count * 6 + 200
 
-            slot = random.choice(
-                [s for s in slots if s.slotId in available_ids]
-            ) if available_ids else None
+                while created < target_count and attempts < max_attempts:
+                    attempts += 1
+                    vehicle = random.choice(vehicles)
+                    user = next((u for u in users if u.customerId == vehicle.customerId), None)
+                    if not user:
+                        continue
 
-            if not slot:
-                continue
+                    minute = random.randint(0, 59)
+                    time_start = current_day.replace(hour=hour, minute=minute)
+                    duration_hours = random.choices([1, 2, 3, 4], weights=[40, 35, 15, 10], k=1)[0]
+                    time_end = time_start + timedelta(hours=duration_hours)
+                    if time_end > week_end:
+                        time_end = week_end
 
-            booking = Booking(
-                userId=user.customerId,
-                slotId=slot.slotId,
-                licensePlate=vehicle.licensePlate,
-                timeStart=time_start,
-                timeEnd=time_end,
-            )
+                    # use in-memory index instead of a DB query per booking
+                    available_slots = [
+                        s for s in slots
+                        if is_slot_available(slot_bookings, s.slotId, time_start, time_end)
+                    ]
+                    if not available_slots:
+                        continue
 
-            db.session.add(booking)
-            bookings.append(booking)
+                    slot = random.choice(available_slots)
 
-        db.session.commit()
-        print(f"Created {len(bookings)} bookings")
+                    # register conflict in memory immediately
+                    slot_bookings[slot.slotId].append((time_start, time_end))
 
-        # Occupancy logs for each booking
+                    booking = Booking(
+                        userId=user.customerId,
+                        slotId=slot.slotId,
+                        licensePlate=vehicle.licensePlate,
+                        timeStart=time_start,
+                        timeEnd=time_end,
+                    )
+                    db.session.add(booking)
+                    batch.append(booking)
+                    bookings.append(booking)
+                    created += 1
+
+                    # flush to DB in batches instead of per booking
+                    if len(batch) >= BATCH_SIZE:
+                        db.session.commit()
+                        batch.clear()
+
+            print(f"  Day {day_offset+1}/7 seeded")
+
+        # flush any remaining bookings
+        if batch:
+            db.session.commit()
+            batch.clear()
+
+        print(f"Total bookings created: {len(bookings)}")
+
+        # create occupancy logs for bookings
         for booking in bookings:
             base_time = booking.timeStart
-
-            for status, offset_mins in [
-                ("reserved",  0),
-                ("occupied",  random.randint(1, 10)),
-                ("available", (booking.timeEnd - booking.timeStart).seconds // 60),
-            ]:
+            duration_mins = max(1, int((booking.timeEnd - booking.timeStart).total_seconds() // 60))
+            occupied_offset = min(random.randint(1, 10), max(1, duration_mins - 1))
+            log_events = [
+                ("reserved", 0),
+                ("occupied", occupied_offset),
+                ("available", duration_mins),
+            ]
+            for status, offset in log_events:
                 log = OccupancyLog(
                     slotId=booking.slotId,
                     status=status,
-                    licensePlate=booking.licensePlate,  # ← plate stored on every log
-                    recorded_at=base_time + timedelta(minutes=offset_mins),
+                    licensePlate=booking.licensePlate,
+                    recorded_at=base_time + timedelta(minutes=offset),
                 )
                 db.session.add(log)
-
         db.session.commit()
-        print(f"Created occupancy logs for {len(bookings)} bookings")
 
-        # Entry gate logs (slotId=0) — simulates cars passing through the gate
-        gate_vehicles = random.sample(vehicles, min(30, len(vehicles)))
+        # update slot.status and booking.status according to 'now'
+        now = datetime.now()
+        for booking in bookings:
+            slot = slot_repo.get_by_id(booking.slotId)
+            if booking.timeStart <= now <= booking.timeEnd:
+                if now >= booking.timeStart + timedelta(minutes=5):
+                    slot.status = "occupied"
+                    booking.status = "occupied"
+                else:
+                    slot.status = "reserved"
+                    booking.status = "active"
+            elif now < booking.timeStart:
+                slot.status = "reserved"
+                booking.status = "active"
+            else:
+                if booking.status == "active":
+                    booking.status = "completed"
+                slot.status = "available"
+        db.session.commit()
+
+        # add some gate logs (slotId=0) to simulate arrivals
+        gate_vehicles = random.sample(vehicles, min(40, len(vehicles)))
         for vehicle in gate_vehicles:
             log = OccupancyLog(
                 slotId=0,
@@ -196,18 +281,17 @@ def seed():
                 recorded_at=now - timedelta(minutes=random.randint(1, 240)),
             )
             db.session.add(log)
-
-        db.session.commit()
-        print(f"Created {len(gate_vehicles)} entry gate logs")
-        print("Seed complete.")
-
-        db.session.add(kiosk)
         db.session.commit()
 
-        # Train prediction model after seeding
-        from routes.admin_routes import prediction_service
-        prediction_service.force_retrain()
-        print("Prediction model trained.")
+        # retrain prediction model if available
+        try:
+            from routes.admin_routes import prediction_service
+            prediction_service.force_retrain()
+        except Exception:
+            print("Prediction service not available to retrain in this context.")
+
+        print("Seed complete and prediction model trained (if available).")
+
 
 if __name__ == "__main__":
     seed()

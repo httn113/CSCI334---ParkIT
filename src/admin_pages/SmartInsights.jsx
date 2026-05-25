@@ -105,10 +105,12 @@ function OccupancyChart({ predictions, currentHour }) {
       // current (available overlay — only for past/now)
       if (isPast || isNow) {
         const avH = (p.predicted_available / maxVal) * chartH;
-        ctx.fillStyle = isNow
-          ? "rgba(74,222,128,0.55)"
-          : "rgba(74,222,128,0.28)";
-        ctx.fillRect(x + 2, padT + chartH - avH, barW - 4, avH);
+        // place available above the occupied portion so they don't visually overlap incorrectly
+        const availY = padT + chartH - predH - avH;
+        const drawY = Math.max(padT, availY); // clamp in case of rounding
+        const drawH = Math.max(0, Math.min(avH, padT + chartH - drawY));
+        ctx.fillStyle = isNow ? "rgba(74,222,128,0.55)" : "rgba(74,222,128,0.28)";
+        ctx.fillRect(x + 2, drawY, barW - 4, drawH);
       }
 
       // "now" marker
@@ -158,6 +160,7 @@ export default function SmartInsights() {
   const [error, setError] = useState(null);
   const [retraining, setRetraining] = useState(false);
   const [retrainMsg, setRetrainMsg] = useState(null);
+  console.log(localStorage.getItem("access_token"))
 
   const fetchPredictions = async () => {
     setLoading(true);
@@ -201,8 +204,10 @@ export default function SmartInsights() {
   useEffect(() => { fetchPredictions(); }, []);
 
   // derive stats
-  const currentHour = 0;
-  const now = data?.predictions?.[0];
+  const localHour = new Date().getHours();
+  const idx = data?.predictions?.findIndex(p => p.hour === localHour);
+  const currentHour = (typeof idx === "number" && idx >= 0) ? idx : 0;
+  const now = data?.predictions?.[currentHour];
   const peak = data?.predictions?.reduce(
     (best, p) => (p.predicted_occupied > (best?.predicted_occupied ?? -1) ? p : best),
     null

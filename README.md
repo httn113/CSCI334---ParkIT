@@ -1,65 +1,140 @@
 # ParkIt
 
-React + Vite front-end for the ParkIt parking app.
+ParkIt is a smart parking management system with separate interfaces for users, admins, and kiosks.
 
-## What you need installed (new developer)
+- Frontend: React + Vite
+- Backend: Flask + SQLite + JWT auth
+- AI service: license plate detection using YOLO + EasyOCR
+- Roles: user, admin, kiosk
 
-Install these on your machine **once**; everything else comes from this repo.
+## Project Structure
 
-| Requirement | Notes |
-|-------------|--------|
-| **Node.js** | **20.x LTS** or newer (includes **npm**). [Download Node.js](https://nodejs.org/) |
-| **Git** | To clone the repository. [Download Git](https://git-scm.com/) |
+- `src/` — React frontend
+  - `admin_pages/` — admin dashboard and analytics
+  - `user_pages/` — user booking, profile, and parking search
+  - `kiosk_pages/` — kiosk/gate UI
+  - `AuthContext.jsx`, `Login.jsx`, `main.jsx` — auth, routing, and entrypoint
+- `backend/` — Flask backend
+  - `app.py` — main API server
+  - `ai_app.py` — license plate detection API
+  - `database.py`, `model.py` — SQLAlchemy schema and DB setup
+  - `routes/` — auth, protected user routes, admin routes
+  - `services/` — business logic
+  - `repositories/` — data access layer
+- `backend/requirements.txt` — backend dependencies
+- `backend/requirements.ai.txt` — AI service dependencies
 
-After cloning, project libraries are **not** installed manually. Run `npm install` in the project folder; that reads `package.json` and installs all packages below.
+## Features
 
-### Runtime libraries (`dependencies`)
+### User
+- Sign up / sign in
+- View profile information
+- Add and manage vehicles
+- Search parking availability
+- Reserve parking spots
+- View and cancel bookings
+- Manage subscriptions
+- Get parking recommendations
 
-These are installed automatically with `npm install`:
+### Admin
+- Seed database with test data
+- View slot utilisation and peak hours
+- Review booking and occupancy analytics
+- Predict availability
+- Retrain prediction model
 
-- **react** — UI library  
-- **react-dom** — React DOM renderer  
-- **react-router-dom** — Client-side routing  
+### Kiosk
+- License plate entry verification
+- Exit verification
+- Parking slot verification and occupancy logging
 
-### Tooling (`devDependencies`)
+### AI
+- Upload image to detect license plate
+- YOLO-based detection + OCR recognition
 
-Used for development and builds (also installed by `npm install`):
+## Backend API
 
-- **vite** — Dev server and production build  
-- **@vitejs/plugin-react** — React support in Vite  
-- **eslint**, **@eslint/js**, **eslint-plugin-react-hooks**, **eslint-plugin-react-refresh**, **globals** — Linting  
-- **@types/react**, **@types/react-dom** — TypeScript types for React (helpful in the editor even for `.jsx`)  
+### Auth
+- `POST /auth/signup`
+- `POST /auth/signin`
+- `POST /auth/parking/entry`
+- `POST /auth/parking/exit`
+- `POST /auth/parking/slot`
 
-## How to run
+### Protected (JWT required)
+- `GET /protected/home`
+- `GET /protected/myProfile/information`
+- `POST /protected/myProfile/addLicensePlate`
+- `GET /protected/myProfile/showLicensePlate`
+- `GET /protected/subscription/current`
+- `POST /protected/subscription/upgrade`
+- `POST /protected/subscription/cancel`
+- `POST /protected/findParking/booking`
+- `GET /protected/myBooking/showBooking`
+- `POST /protected/myBooking/cancelBooking`
+- `POST /protected/searchParking`
+- `GET|POST /protected/dashboard`
+- `POST /protected/parking/recommendations`
 
-1. Install **Node.js** (see above).
-2. Clone the repo with Git.
-3. In the project root, install packages:
+### Admin
+- `POST /admin/seed`
+- `GET /admin/analytics/slotStatus`
+- `GET /admin/analytics/peakHours`
+- `GET /admin/utilisation`
+- `GET /admin/analytics/trends`
+- `GET /admin/analytics/recent-activity`
+- `GET /admin/analytics/bookings/list`
+- `GET /admin/analytics/predict`
+- `POST /admin/analytics/predict/retrain`
 
-   ```bash
-   npm install
-   ```
+### AI
+- `POST /ai/detect`
 
-4. Start the dev server:
+## Setup
 
-   ```bash
-   npm run dev
-   ```
+### Prerequisites
+- Node.js 20.x or newer
+- Python 3.11+ (recommended)
 
-5. Open the URL Vite prints in the terminal (usually `http://localhost:5173`).
+### Frontend
+1. From project root:
+```bash
+npm install
+```
 
-### Other scripts
 
-- `npm run build` — Production build to `dist/`
-- `npm run preview` — Preview the production build locally
-- `npm run lint` — Run ESLint
+2. Configure API URL:
+Create .env in the repo root
+```bash
+VITE_API_URL=http://127.0.0.1:5001
+```
 
-## Demo logins
+3. Start dev server
+```bash
+npm run dev
+```
 
-There are three roles:
+### Backend
+1. Install dependencies:
+```bash
+python -m pip install -r backend/requirements.txt
+```
 
-| Role | Username | Password |
-|------|----------|----------|
-| Normal user | `user` | `1` |
-| Administrator | `admin` | `admin` |
-| Kiosk | `kiosk` | `1` |
+2. Run the API
+```bash
+python backend/app.py
+```
+
+### Demo account, booking, user activity
+- Normal user: Can be created easily via the User Interface
+- Admin role and kiosk role: run the following command
+```bash
+python seed.py
+```
+- Admin: admin@parking.com - admin123
+- Kiosk: kiosk@parking.com - kiosk123
+
+### Notes
+- The Flask backend uses backend/parkIT.db as its SQLite database.
+- backend/app.py runs a scheduled task to expire old bookings every 5 minutes.
+- Auth tokens are stored in session storage and route users by role in src/main.jsx.

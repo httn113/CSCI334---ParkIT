@@ -133,14 +133,14 @@ export default function Analytics() {
         get('/admin/utilisation'),
         get('/admin/analytics/trends'),
         get('/admin/analytics/recent-activity?limit=8'),
-        get('/admin/analytics/bookings/list'),
+        // get('/admin/analytics/bookings/list'),
       ]);
       if (s) setStats(s);
       if (p) setPeak(p);
       if (u) setUtil(u);
       if (t) setTrend(t);
       if (a) setActivity(a.activities || []);
-      if (b) setBookings(b);
+      // if (b) setBookings(b);
     }
 
     loadAll();
@@ -230,7 +230,7 @@ export default function Analytics() {
       </div>
 
       {/* ── Bookings list ── */}
-      <div className="recent-activity">
+      {/* <div className="recent-activity">
         <h2 className="recent-activity__title">
           Bookings
           {bookings?.stats && (
@@ -269,7 +269,7 @@ export default function Analytics() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div> */}
 
     </div>
   );

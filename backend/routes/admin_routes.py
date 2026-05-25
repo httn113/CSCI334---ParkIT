@@ -23,6 +23,32 @@ def admin_required(fn):
         return fn(*args, **kwargs)
     return wrapper
 
+@admin_bp.route("/seed", methods=["POST"])
+@jwt_required()
+@admin_required
+def seed_database():
+    """
+    Seeds the database with test data.
+    WARNING: This will clear all existing data!
+    """
+    try:
+        from seed import seed
+        seed()
+        return jsonify({
+            "message": "Database seeded successfully",
+            "data_generated": {
+                "slots": 100,
+                "users": 100,
+                "vehicles": 100,
+                "bookings": 300,
+                "occupancy_logs": "500+"
+            }
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": f"Seeding failed: {str(e)}"
+        }), 500
+
 @admin_bp.route("/analytics/slotStatus", methods = ["GET"])
 @jwt_required()
 @admin_required

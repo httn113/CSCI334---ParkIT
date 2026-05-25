@@ -404,7 +404,7 @@ class AnalyticService:
         }, 200
     
     def get_trends(self):
-        logs = self.occupancy_repo.get_all()
+        logs = self.occupancy_repo.get_all(168)
         date_counts = defaultdict(int)
 
         for log in logs:
@@ -495,7 +495,7 @@ class PredictionService:
                 key = (log.recorded_at.weekday(), log.recorded_at.hour)
                 counts[key] += 1
 
-        if len(counts) < 5:
+        if len(counts) < 1:
             return None, None
 
         X, y = [], []

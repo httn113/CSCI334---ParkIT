@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import './Overview.css';
-
+import Modal from '../components/Modal.jsx';
 
 const ENDPOINT = import.meta.env.VITE_API_URL;
 
@@ -68,6 +68,10 @@ export default function Overview() {
   // ];
 
   const [recentActivities, setRecentActivities] = useState([]);
+  const [seeding, setSeeding] = useState(false);
+  const [seedError, setError] = useState(null);
+  const [seedSuccess, setSeedSuccess] = useState(null);
+  const [showSeedConfirm, setShowSeedConfirm] = useState(false);
 
   useEffect(() => {
     async function fetchActivity() {
@@ -94,6 +98,42 @@ export default function Overview() {
     'Vehicle Exited':   'activity-badge--exited',   // Red
     'Booking Expired':  'activity-badge--expired',  // Orange
   };
+
+  const handleSeedClick = async () => {
+    setSeeding(true);
+    setError(null);
+    setSeedSuccess(null);
+
+    try {
+      const res = await fetch(`${ENDPOINT}/admin/seed`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          "Content-Type": "application/json"
+        },
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        setError(errData.error || "Seeding failed");
+        return;
+      }
+
+      const data = await res.json();
+      setSeedSuccess("✓ Database seeded successfully! Refreshing data...");
+      setShowSeedConfirm(false);
+
+      // Refresh stats after seeding
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (err) {
+      setError(err.message || "Network error during seeding");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
 
   return (
     <div className="overview-page">
@@ -145,7 +185,110 @@ export default function Overview() {
           ))}
         </div>
       </div>
+      {/* Seed Data Button */}
+      <div style={{ marginBottom: '24px' }}>
+        <button
+          onClick={() => setShowSeedConfirm(true)}
+          disabled={seeding}
+          style={{
+            padding: '10px 16px',
+            backgroundColor: '#ff6b6b',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: seeding ? 'not-allowed' : 'pointer',
+            opacity: seeding ? 0.6 : 1,
+            fontWeight: 600,
+            fontSize: '14px'
+          }}
+        >
+          {seeding ? 'Seeding...' : '🌱 Generate Test Data'}
+        </button>
+      </div>
 
+      {/* Confirmation Modal */}
+      <Modal
+        title="Generate Test Data"
+        open={showSeedConfirm}
+        onClose={() => !seeding && setShowSeedConfirm(false)}
+      >
+        <div style={{ padding: '20px' }}>
+          <p style={{ color: '#f08080', marginBottom: '12px', fontWeight: 600 }}>
+            ⚠️ This will delete all existing data!
+          </p>
+          <p style={{ marginBottom: '20px', color: '#666' }}>
+            The system will generate:
+          </p>
+          <ul style={{ marginBottom: '20px', color: '#666' }}>
+            <li>✓ 5 parking zones (A-E) with 100 total spots</li>
+            <li>✓ 100 test users with vehicles</li>
+            <li>✓ 300 sample bookings</li>
+            <li>✓ 500+ occupancy logs</li>
+            <li>✓ AI model trained</li>
+          </ul>
+
+          {seedError && (
+            <div style={{
+              backgroundColor: '#ffe0e0',
+              color: '#d32f2f',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '20px'
+            }}>
+              Error: {seedError}
+            </div>
+          )}
+
+          {seedSuccess && (
+            <div style={{
+              backgroundColor: '#e8f5e9',
+              color: '#2e7d32',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '20px'
+            }}>
+              {seedSuccess}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={handleSeedClick}
+              disabled={seeding}
+              style={{
+                flex: 1,
+                padding: '10px',
+                backgroundColor: '#ff6b6b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: seeding ? 'not-allowed' : 'pointer',
+                fontWeight: 600,
+                opacity: seeding ? 0.6 : 1
+              }}
+            >
+              {seeding ? 'Seeding in progress...' : 'Yes, Generate Data'}
+            </button>
+            <button
+              onClick={() => setShowSeedConfirm(false)}
+              disabled={seeding}
+              style={{
+                flex: 1,
+                padding: '10px',
+                backgroundColor: '#e0e0e0',
+                color: '#333',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: seeding ? 'not-allowed' : 'pointer',
+                fontWeight: 600,
+                opacity: seeding ? 0.6 : 1
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
