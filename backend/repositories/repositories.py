@@ -148,15 +148,13 @@ class BookingRepository:
         )).scalar_one_or_none()
 
     def get_active_by_slot_now(self, slot_id: int, now):
-        # A 1-minute buffer is enough to fix rounding errors 
-        # without overlapping other bookings.
         return db.session.execute(
             db.select(Booking).where(
                 Booking.slotId == slot_id,
                 Booking.timeStart <= now,
                 Booking.timeEnd >= now
             )
-        ).scalar_one_or_none()
+        ).scalars().first()
     
     def get_active_booking_by_plate(self, plate: str, now):
         return db.session.execute(
