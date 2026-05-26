@@ -118,6 +118,8 @@ npm run dev
 1. Install dependencies:
 ```bash
 python -m pip install -r backend/requirements.txt
+python -m pip install -r backend/requirements.ai.txt
+
 ```
 
 2. Run the API
