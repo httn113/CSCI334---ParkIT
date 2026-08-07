@@ -1,5 +1,4 @@
 # ParkIt
-
 ParkIt is a smart parking management system with separate interfaces for users, admins, and kiosks.
 
 - Frontend: React + Vite
